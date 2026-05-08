@@ -1,0 +1,93 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: veroscribe
+      POSTGRES_PASSWORD: veroscribe
+      POSTGRES_DB: veroscribe
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U veroscribe -d veroscribe"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile.dev
+    environment:
+      DATABASE_URL: postgres://veroscribe:veroscribe@db:5432/veroscribe
+      CORS_ORIGINS: http://localhost:3000
+      NODE_ENV: development
+      API_PORT: "3001"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+    volumes:
+      - api_node_modules:/usr/src/app/node_modules
+      - api_app_node_modules:/usr/src/app/apps/api/node_modules
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/api/src
+          target: /usr/src/app/apps/api/src
+        - action: sync
+          path: ./packages/db/src
+          target: /usr/src/app/packages/db/src
+        - action: sync
+          path: ./packages/shared/src
+          target: /usr/src/app/packages/shared/src
+        - action: rebuild
+          path: ./apps/api/package.json
+        - action: rebuild
+          path: ./bun.lock
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.dev
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    volumes:
+      - web_node_modules:/usr/src/app/node_modules
+      - web_app_node_modules:/usr/src/app/apps/web/node_modules
+      - web_next_cache:/usr/src/app/apps/web/.next
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/web/src
+          target: /usr/src/app/apps/web/src
+        - action: sync
+          path: ./apps/web/public
+          target: /usr/src/app/apps/web/public
+        - action: sync
+          path: ./packages/shared/src
+          target: /usr/src/app/packages/shared/src
+        - action: rebuild
+          path: ./apps/web/package.json
+        - action: rebuild
+          path: ./apps/web/next.config.ts
+        - action: rebuild
+          path: ./bun.lock
+
+volumes:
+  pgdata-dev:
+  api_node_modules:
+  api_app_node_modules:
+  web_node_modules:
+  web_app_node_modules:
+  web_next_cache:

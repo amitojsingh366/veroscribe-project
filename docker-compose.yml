@@ -1,0 +1,62 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-veroscribe}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-veroscribe}
+      POSTGRES_DB: ${POSTGRES_DB:-veroscribe}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-veroscribe} -d ${POSTGRES_DB:-veroscribe}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - veroscribe
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-veroscribe}:${POSTGRES_PASSWORD:-veroscribe}@db:5432/${POSTGRES_DB:-veroscribe}
+      API_PORT: "3001"
+      CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "${API_PORT:-3001}:3001"
+    networks:
+      - veroscribe
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      PORT: "3000"
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    networks:
+      - veroscribe
+
+volumes:
+  pg-data:
+
+networks:
+  veroscribe:
+    driver: bridge

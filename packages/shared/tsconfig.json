@@ -1,0 +1,6 @@
+{
+  "extends": "@veroscribe/tsconfig/node.json",
+  "include": [
+    "src"
+  ]
+}

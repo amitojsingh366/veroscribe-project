@@ -1,2 +1,19 @@
+node_modules/
+.next/
+.turbo/
+dist/
+coverage/
+.env
+.env.local
+*.log
+
+# Design archive reference material.
+veroscribe-project/
 VEROSCRIBE_HANDOFF.md
 Veroscribe project-handoff.zip
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+PROGRESS.md

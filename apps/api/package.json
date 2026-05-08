@@ -1,0 +1,29 @@
+{
+  "name": "@veroscribe/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch run src/index.ts",
+    "build": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.7.0",
+    "@veroscribe/db": "workspace:*",
+    "@veroscribe/shared": "workspace:*",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.44.0",
+    "hono": "^4.8.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "@veroscribe/eslint-config": "workspace:*",
+    "@veroscribe/tsconfig": "workspace:*",
+    "eslint": "^9.15.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,14 @@
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/coverage
+**/.env
+**/.env.*
+**/.git
+**/.DS_Store
+**/Dockerfile
+**/Dockerfile.dev
+**/.dockerignore
+README.md
+veroscribe-project/

@@ -1,0 +1,33 @@
+{
+  "name": "@veroscribe/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "generate": "drizzle-kit generate",
+    "push": "drizzle-kit push",
+    "migrate": "bun run src/migrate.ts",
+    "seed": "bun run src/seed.ts",
+    "studio": "drizzle-kit studio",
+    "lint": "eslint .",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.44.0",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "@veroscribe/eslint-config": "workspace:*",
+    "@veroscribe/tsconfig": "workspace:*",
+    "drizzle-kit": "^0.31.0",
+    "eslint": "^9.15.0",
+    "typescript": "^5.6.0"
+  }
+}
