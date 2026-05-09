@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { testClient } from "hono/testing";
 import { app } from "../src/app";
 import { resetTestDb, seedOnePhysicianAndSlot } from "./helpers";
@@ -7,6 +7,10 @@ const client = testClient(app);
 
 describe("bookings routes", () => {
   beforeEach(async () => {
+    await resetTestDb();
+  });
+
+  afterEach(async () => {
     await resetTestDb();
   });
 
@@ -26,6 +30,7 @@ describe("bookings routes", () => {
 
     expect(res.status).toBe(201);
     const body = await res.json();
+    if (!("status" in body)) throw new Error("Expected booking response");
     expect(body.status).toBe("pending");
   });
 

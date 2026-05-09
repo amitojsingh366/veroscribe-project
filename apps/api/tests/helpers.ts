@@ -1,10 +1,22 @@
 import { db } from "@veroscribe/db";
-import { availabilitySlots, bookings, physicians } from "@veroscribe/db";
+import { availabilitySlots, physicians } from "@veroscribe/db";
+import { sql } from "drizzle-orm";
 
 export async function resetTestDb() {
-  await db.delete(bookings);
-  await db.delete(availabilitySlots);
-  await db.delete(physicians);
+  await db.execute(sql`
+    delete from bookings
+    where patient_email in ('jane@example.com')
+      or physician_id in (
+        select id from physicians where name = 'Dr. Test Physician'
+      )
+  `);
+  await db.execute(sql`
+    delete from availability_slots
+    where physician_id in (
+      select id from physicians where name = 'Dr. Test Physician'
+    )
+  `);
+  await db.execute(sql`delete from physicians where name = 'Dr. Test Physician'`);
 }
 
 export async function seedOnePhysicianAndSlot() {

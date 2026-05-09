@@ -12,11 +12,11 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "db:generate": "bun --filter @veroscribe/db run generate",
-    "db:push": "bun --filter @veroscribe/db run push",
-    "db:migrate": "bun --filter @veroscribe/db run migrate",
-    "db:seed": "bun --filter @veroscribe/db run seed",
-    "db:studio": "bun --filter @veroscribe/db run studio"
+    "db:generate": "bun --filter=@veroscribe/db run generate",
+    "db:push": "bun --filter=@veroscribe/db run push",
+    "db:migrate": "bun --filter=@veroscribe/db run migrate",
+    "db:seed": "bun --filter=@veroscribe/db run seed",
+    "db:studio": "bun --filter=@veroscribe/db run studio"
   },
   "devDependencies": {
     "turbo": "^2.5.0",

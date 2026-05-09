@@ -14,7 +14,7 @@ const statusMap: Record<
 export function StatusBadge({ status }: { status: BookingStatus }) {
   const item = statusMap[status];
   return (
-    <Badge tone={item.tone}>
+    <Badge className="self-center justify-self-start" tone={item.tone}>
       <span className="size-1.5 rounded-full bg-current" />
       {item.label}
     </Badge>

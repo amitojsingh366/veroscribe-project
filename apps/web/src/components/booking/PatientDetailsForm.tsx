@@ -7,10 +7,13 @@ import {
 } from "@veroscribe/shared";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import type { z } from "zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { createBooking } from "@/lib/api";
+
+type CreateBookingFormValues = z.input<typeof createBookingInputSchema>;
 
 export function PatientDetailsForm({
   physicianId,
@@ -25,7 +28,7 @@ export function PatientDetailsForm({
     handleSubmit,
     setError,
     formState: { errors, isSubmitting }
-  } = useForm<CreateBookingInput>({
+  } = useForm<CreateBookingFormValues, undefined, CreateBookingInput>({
     resolver: zodResolver(createBookingInputSchema),
     defaultValues: {
       physicianId,
@@ -59,8 +62,8 @@ export function PatientDetailsForm({
       <div className="grid gap-4 md:grid-cols-2">
         <Input
           autoComplete="email"
+          inputMode="email"
           label="Email"
-          type="email"
           {...register("patientEmail")}
           error={errors.patientEmail?.message}
         />

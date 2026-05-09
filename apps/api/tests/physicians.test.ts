@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { testClient } from "hono/testing";
 import { app } from "../src/app";
 import { resetTestDb, seedOnePhysicianAndSlot } from "./helpers";
@@ -10,11 +10,17 @@ describe("physicians routes", () => {
     await resetTestDb();
   });
 
+  afterEach(async () => {
+    await resetTestDb();
+  });
+
   it("lists physicians", async () => {
     await seedOnePhysicianAndSlot();
     const res = await client.api.physicians.$get();
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toHaveLength(1);
+    expect(body.some((physician) => physician.name === "Dr. Test Physician")).toBe(
+      true
+    );
   });
 });

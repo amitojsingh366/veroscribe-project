@@ -1,5 +1,5 @@
 {
-  "extends": "@veroscribe/tsconfig/node.json",
+  "extends": "@veroscribe/tsconfig/base.json",
   "include": [
     "src"
   ]

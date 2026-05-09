@@ -63,7 +63,7 @@ export function BookingsList({
         <div className="max-h-[60vh] overflow-y-auto">
           {bookings.map((booking) => (
             <Link
-              className="grid gap-3 border-b border-border-muted px-4 py-4 transition hover:bg-[#FAF8F4] data-[selected=true]:border-l-4 data-[selected=true]:border-l-primary data-[selected=true]:bg-[#FAF8F4] lg:grid-cols-[1.4fr_1.4fr_1fr_0.8fr_0.9fr]"
+              className="grid items-center gap-3 border-b border-border-muted px-4 py-4 transition hover:bg-[#FAF8F4] data-[selected=true]:border-l-4 data-[selected=true]:border-l-primary data-[selected=true]:bg-[#FAF8F4] lg:grid-cols-[1.4fr_1.4fr_1fr_0.8fr_0.9fr]"
               data-selected={booking.id === selectedId}
               href={`/admin/${booking.id}${status ? `?status=${status}` : ""}`}
               key={booking.id}

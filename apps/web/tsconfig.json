@@ -6,7 +6,9 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "allowJs": true,
+    "incremental": true
   },
   "include": [
     "next-env.d.ts",

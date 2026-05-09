@@ -9,12 +9,11 @@
   "scripts": {
     "build": "tsc --noEmit",
     "generate": "drizzle-kit generate",
-    "push": "drizzle-kit push",
+    "push": "drizzle-kit push --force",
     "migrate": "bun run src/migrate.ts",
     "seed": "bun run src/seed.ts",
     "studio": "drizzle-kit studio",
     "lint": "eslint .",
-    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -42,9 +42,9 @@ export default async function AdminPage({
           </div>
         ))}
       </div>
-      <div className="grid min-h-0 flex-1 gap-5 xl:grid-cols-[1fr_320px]">
+      <div className="grid min-h-0 flex-1 gap-5 2xl:grid-cols-[1fr_320px]">
         <BookingsList bookings={bookings} status={status} />
-        <div className="hidden xl:block">
+        <div className="hidden 2xl:block">
           <ScheduleView bookings={bookings} physicians={physicians} />
         </div>
       </div>
