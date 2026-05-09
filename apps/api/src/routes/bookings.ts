@@ -61,6 +61,7 @@ export const bookings = new Hono()
             patientName: input.patientName,
             patientEmail: input.patientEmail,
             patientPhone: input.patientPhone,
+            patientDateOfBirth: input.patientDateOfBirth,
             reasonForVisit: input.reasonForVisit,
             visitType: input.visitType,
             insurance: input.insurance ?? null,
@@ -125,32 +126,73 @@ export const bookings = new Hono()
     }),
     async (c) => {
       const { id } = c.req.valid("param");
-      const { status, notes } = c.req.valid("json");
+      const { status, notes, slotId } = c.req.valid("json");
       const [existing] = await db
         .select()
         .from(bookingsTable)
         .where(eq(bookingsTable.id, id));
 
       if (!existing) return c.json({ error: "Booking not found" }, 404);
-      if (!legalTransitions[existing.status].includes(status)) {
+
+      if (status && !legalTransitions[existing.status].includes(status)) {
         return c.json(
           { error: `Illegal transition ${existing.status} -> ${status}` },
           409
         );
       }
 
-      const [updated] = await db
-        .update(bookingsTable)
-        .set({ status, notes: notes ?? existing.notes })
-        .where(eq(bookingsTable.id, id))
-        .returning();
-
-      if (status === "cancelled") {
-        await db
-          .update(availabilitySlots)
-          .set({ status: "available" })
-          .where(eq(availabilitySlots.id, existing.slotId));
+      if (slotId && existing.status !== "pending" && existing.status !== "confirmed") {
+        return c.json({ error: "Terminal bookings cannot be rescheduled" }, 409);
       }
+
+      const updated = await db.transaction(async (tx) => {
+        if (slotId && slotId !== existing.slotId) {
+          const [nextSlot] = await tx
+            .select()
+            .from(availabilitySlots)
+            .where(
+              and(
+                eq(availabilitySlots.id, slotId),
+                eq(availabilitySlots.physicianId, existing.physicianId)
+              )
+            );
+
+          if (!nextSlot) return undefined;
+          if (nextSlot.status !== "available") return null;
+
+          await tx
+            .update(availabilitySlots)
+            .set({ status: "available" })
+            .where(eq(availabilitySlots.id, existing.slotId));
+
+          await tx
+            .update(availabilitySlots)
+            .set({ status: "booked" })
+            .where(eq(availabilitySlots.id, slotId));
+        }
+
+        if (status === "cancelled") {
+          await tx
+            .update(availabilitySlots)
+            .set({ status: "available" })
+            .where(eq(availabilitySlots.id, slotId ?? existing.slotId));
+        }
+
+        const [row] = await tx
+          .update(bookingsTable)
+          .set({
+            ...(status ? { status } : {}),
+            ...(slotId ? { slotId } : {}),
+            notes: notes ?? existing.notes
+          })
+          .where(eq(bookingsTable.id, id))
+          .returning();
+
+        return row;
+      });
+
+      if (updated === undefined) return c.json({ error: "Slot not found" }, 404);
+      if (updated === null) return c.json({ error: "Slot already booked" }, 409);
 
       return c.json(updated);
     }

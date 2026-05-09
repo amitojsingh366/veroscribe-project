@@ -1,8 +1,13 @@
 import type { BookingWithRelations } from "@veroscribe/shared";
-import { Building2, Clock, Video } from "lucide-react";
+import { Building2, Clock, MoreHorizontal, Video } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
-import { formatDate, formatTime, initialsFor } from "@/lib/format";
+import {
+  formatDate,
+  formatDateOfBirth,
+  formatTime,
+  initialsFor
+} from "@/lib/format";
 import { BookingActions } from "./BookingActions";
 import { StatusBadge } from "./StatusBadge";
 
@@ -12,11 +17,16 @@ export function BookingDetailPanel({
   booking: BookingWithRelations;
 }) {
   return (
-    <aside className="flex h-full flex-col overflow-hidden border-l border-border bg-surface">
+    <aside className="flex h-full min-h-0 flex-col bg-surface lg:overflow-hidden">
       <div className="p-5">
-        <p className="text-xs font-medium uppercase tracking-[0.06em] text-fg-muted">
-          Booking #{booking.id.slice(0, 8)}
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-medium uppercase tracking-[0.06em] text-fg-muted">
+            Booking #{booking.id.slice(0, 8)}
+          </p>
+          <button className="rounded-full p-1.5 text-fg-muted hover:bg-black/[0.04]" type="button">
+            <MoreHorizontal size={16} />
+          </button>
+        </div>
         <div className="mt-4">
           <StatusBadge status={booking.status} />
         </div>
@@ -28,12 +38,15 @@ export function BookingDetailPanel({
           />
           <div>
             <h2 className="text-lg font-semibold">{booking.patientName}</h2>
-            <p className="text-xs text-fg-muted">{booking.insurance ?? "Self-pay"}</p>
+            <p className="text-xs text-fg-muted">
+              {formatDateOfBirth(booking.patientDateOfBirth)} ·{" "}
+              {booking.insurance ?? "Self-pay"}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 pb-5">
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-visible px-5 pb-5 lg:overflow-y-auto">
         <Card className="bg-[#FAF8F4]">
           <p className="mb-3 text-xs font-medium uppercase tracking-[0.06em] text-fg-muted">
             Visit details
@@ -106,7 +119,9 @@ export function BookingDetailPanel({
 
       <BookingActions
         bookingId={booking.id}
+        currentSlotId={booking.slotId}
         notes={booking.notes}
+        physicianId={booking.physicianId}
         status={booking.status}
       />
     </aside>

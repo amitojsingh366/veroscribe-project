@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  date,
   doublePrecision,
   index,
   integer,
@@ -100,6 +101,7 @@ export const bookings = pgTable(
     patientName: varchar("patient_name", { length: 120 }).notNull(),
     patientEmail: varchar("patient_email", { length: 254 }).notNull(),
     patientPhone: varchar("patient_phone", { length: 32 }).notNull(),
+    patientDateOfBirth: date("patient_date_of_birth"),
     reasonForVisit: text("reason_for_visit").notNull(),
     visitType: visitTypeEnum("visit_type").notNull().default("In-person"),
     durationMinutes: integer("duration_minutes").notNull().default(30),

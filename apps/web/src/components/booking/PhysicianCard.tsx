@@ -1,8 +1,11 @@
+"use client";
+
 import type { Physician } from "@veroscribe/shared";
 import { Clock, MapPin, Star } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
+import { useBookingStore } from "@/stores/bookingStore";
 
 export function PhysicianCard({
   physician,
@@ -11,8 +14,10 @@ export function PhysicianCard({
   physician: Physician;
   href: string;
 }) {
+  const setPhysician = useBookingStore((state) => state.setPhysician);
+
   return (
-    <Link href={href}>
+    <Link href={href} onClick={() => setPhysician(physician)}>
       <Card className="group flex h-full gap-4 rounded-[18px] p-4 transition hover:border-[#c9c2b6]">
         <Avatar
           initials={physician.initials}

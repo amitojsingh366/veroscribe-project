@@ -59,7 +59,6 @@ export const physicians = new Hono()
         .where(
           and(
             eq(availabilitySlots.physicianId, id),
-            eq(availabilitySlots.status, "available"),
             gte(availabilitySlots.startAt, fromDate),
             lte(availabilitySlots.startAt, toDate)
           )

@@ -32,6 +32,10 @@ export const createBookingInputSchema = z.object({
     .min(7, "Phone too short")
     .max(32)
     .regex(/^[+\d\s().-]+$/, "Phone may contain digits, spaces, +, -, () only"),
+  patientDateOfBirth: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD"),
   reasonForVisit: z
     .string()
     .trim()
@@ -42,10 +46,15 @@ export const createBookingInputSchema = z.object({
 });
 export type CreateBookingInput = z.infer<typeof createBookingInputSchema>;
 
-export const updateBookingStatusInputSchema = z.object({
-  status: z.enum(["confirmed", "cancelled", "completed"]),
-  notes: z.string().trim().max(2000).optional()
-});
+export const updateBookingStatusInputSchema = z
+  .object({
+    status: z.enum(["confirmed", "cancelled", "completed"]).optional(),
+    notes: z.string().trim().max(2000).optional(),
+    slotId: z.string().uuid().optional()
+  })
+  .refine((input) => input.status || input.notes !== undefined || input.slotId, {
+    message: "Provide a status, notes, or slotId"
+  });
 export type UpdateBookingStatusInput = z.infer<typeof updateBookingStatusInputSchema>;
 
 export const bookingSchema = z.object({
@@ -55,6 +64,7 @@ export const bookingSchema = z.object({
   patientName: z.string(),
   patientEmail: z.string().email(),
   patientPhone: z.string(),
+  patientDateOfBirth: z.string().nullable(),
   reasonForVisit: z.string(),
   visitType: visitTypeSchema,
   insurance: z.string().nullable(),

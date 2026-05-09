@@ -61,34 +61,89 @@ const seedPhysicians: NewPhysician[] = [
 ];
 
 const prototypeSlots = [
-  { label: "8:30 AM", available: true },
-  { label: "9:00 AM", available: false },
-  { label: "9:30 AM", available: true },
-  { label: "10:00 AM", available: true },
-  { label: "10:30 AM", available: false },
-  { label: "11:00 AM", available: true },
-  { label: "1:30 PM", available: true },
-  { label: "2:00 PM", available: true },
-  { label: "2:30 PM", available: false },
-  { label: "3:00 PM", available: true },
-  { label: "3:30 PM", available: true },
-  { label: "4:00 PM", available: false }
+  { label: "8:30 AM" },
+  { label: "9:00 AM" },
+  { label: "9:30 AM" },
+  { label: "10:00 AM" },
+  { label: "10:30 AM" },
+  { label: "11:00 AM" },
+  { label: "1:30 PM" },
+  { label: "2:00 PM" },
+  { label: "2:30 PM" },
+  { label: "3:00 PM" },
+  { label: "3:30 PM" },
+  { label: "4:00 PM" }
 ];
 
 const prototypeDays = [
-  { label: "Mon, May 11", isoDate: "2026-05-11", available: false },
-  { label: "Tue, May 12", isoDate: "2026-05-12", available: true },
-  { label: "Wed, May 13", isoDate: "2026-05-13", available: true },
-  { label: "Thu, May 14", isoDate: "2026-05-14", available: true },
-  { label: "Fri, May 15", isoDate: "2026-05-15", available: false },
-  { label: "Sat, May 16", isoDate: "2026-05-16", available: true }
+  { label: "Mon, May 11", isoDate: "2026-05-11" },
+  { label: "Tue, May 12", isoDate: "2026-05-12" },
+  { label: "Wed, May 13", isoDate: "2026-05-13" },
+  { label: "Thu, May 14", isoDate: "2026-05-14" },
+  { label: "Fri, May 15", isoDate: "2026-05-15" },
+  { label: "Sat, May 16", isoDate: "2026-05-16" }
 ];
+
+type AvailabilityProfile = {
+  availableDates: string[];
+  blockedByDate: Record<string, string[] | undefined>;
+  blockedTimes: string[];
+};
+
+const availabilityProfiles: AvailabilityProfile[] = [
+  {
+    availableDates: ["2026-05-12", "2026-05-13", "2026-05-14", "2026-05-16"],
+    blockedByDate: {},
+    blockedTimes: ["9:00 AM", "10:30 AM", "2:30 PM", "4:00 PM"]
+  },
+  {
+    availableDates: ["2026-05-11", "2026-05-12", "2026-05-14", "2026-05-15"],
+    blockedByDate: {
+      "2026-05-12": ["8:30 AM", "1:30 PM"],
+      "2026-05-14": ["3:30 PM"]
+    },
+    blockedTimes: ["11:00 AM", "4:00 PM"]
+  },
+  {
+    availableDates: ["2026-05-12", "2026-05-13", "2026-05-15", "2026-05-16"],
+    blockedByDate: {
+      "2026-05-13": ["9:30 AM", "10:00 AM", "10:30 AM"],
+      "2026-05-16": ["2:00 PM"]
+    },
+    blockedTimes: ["8:30 AM", "3:00 PM"]
+  },
+  {
+    availableDates: ["2026-05-11", "2026-05-13", "2026-05-14", "2026-05-16"],
+    blockedByDate: {
+      "2026-05-11": ["10:00 AM", "2:30 PM"],
+      "2026-05-16": ["11:00 AM", "3:30 PM"]
+    },
+    blockedTimes: ["9:30 AM", "4:00 PM"]
+  }
+];
+
+function isSlotAvailable(
+  physicianIndex: number,
+  day: (typeof prototypeDays)[number],
+  slot: (typeof prototypeSlots)[number]
+) {
+  const profile =
+    availabilityProfiles[physicianIndex % availabilityProfiles.length] ??
+    availabilityProfiles[0];
+  if (!profile) return false;
+  return (
+    profile.availableDates.includes(day.isoDate) &&
+    !profile.blockedTimes.includes(slot.label) &&
+    !(profile.blockedByDate[day.isoDate] ?? []).includes(slot.label)
+  );
+}
 
 const seedBookings = [
   {
     patient: "Eleanor Chen",
     email: "eleanor.chen@example.com",
     phone: "(415) 555-0182",
+    dateOfBirth: "1989-04-18",
     initials: "EC",
     date: "Tue, May 12",
     time: "9:30 AM",
@@ -105,6 +160,7 @@ const seedBookings = [
     patient: "Marcus Whitfield",
     email: "marcus.whitfield@example.com",
     phone: "(415) 555-0114",
+    dateOfBirth: "1989-04-18",
     initials: "MW",
     date: "Tue, May 12",
     time: "10:00 AM",
@@ -121,6 +177,7 @@ const seedBookings = [
     patient: "Sofia Reyes",
     email: "sofia.reyes@example.com",
     phone: "(415) 555-0138",
+    dateOfBirth: "1991-08-03",
     initials: "SR",
     date: "Tue, May 12",
     time: "11:00 AM",
@@ -137,6 +194,7 @@ const seedBookings = [
     patient: "Daniel Park",
     email: "daniel.park@example.com",
     phone: "(415) 555-0150",
+    dateOfBirth: "1984-12-11",
     initials: "DP",
     date: "Tue, May 12",
     time: "1:30 PM",
@@ -153,6 +211,7 @@ const seedBookings = [
     patient: "Aisha Bello",
     email: "aisha.bello@example.com",
     phone: "(415) 555-0121",
+    dateOfBirth: "1993-02-24",
     initials: "AB",
     date: "Tue, May 12",
     time: "2:00 PM",
@@ -169,6 +228,7 @@ const seedBookings = [
     patient: "Theo Lindgren",
     email: "theo.lindgren@example.com",
     phone: "(415) 555-0199",
+    dateOfBirth: "1978-06-09",
     initials: "TL",
     date: "Wed, May 13",
     time: "8:30 AM",
@@ -185,6 +245,7 @@ const seedBookings = [
     patient: "Nadia Rosenbaum",
     email: "nadia.rosenbaum@example.com",
     phone: "(415) 555-0188",
+    dateOfBirth: "1990-11-17",
     initials: "NR",
     date: "Wed, May 13",
     time: "9:00 AM",
@@ -201,6 +262,7 @@ const seedBookings = [
     patient: "Wesley Ahmadi",
     email: "wesley.ahmadi@example.com",
     phone: "(415) 555-0147",
+    dateOfBirth: "1986-01-29",
     initials: "WA",
     date: "Wed, May 13",
     time: "10:30 AM",
@@ -255,7 +317,7 @@ async function main() {
   const slotByKey = new Map<string, string>();
 
   console.log("Generating prototype availability");
-  for (const physician of insertedPhysicians) {
+  for (const [physicianIndex, physician] of insertedPhysicians.entries()) {
     const rows: NewSlot[] = [];
 
     for (const day of prototypeDays) {
@@ -270,7 +332,11 @@ async function main() {
           physicianId: physician.id,
           startAt,
           endAt: addMinutes(startAt, 30),
-          status: day.available && slot.available && !isBooked ? "available" : "booked"
+          status: isBooked
+            ? "booked"
+            : isSlotAvailable(physicianIndex, day, slot)
+              ? "available"
+              : "held"
         });
       }
     }
@@ -306,6 +372,7 @@ async function main() {
       patientName: booking.patient,
       patientEmail: booking.email,
       patientPhone: booking.phone,
+      patientDateOfBirth: booking.dateOfBirth,
       reasonForVisit: booking.reason,
       visitType: booking.visitType,
       durationMinutes: booking.duration,

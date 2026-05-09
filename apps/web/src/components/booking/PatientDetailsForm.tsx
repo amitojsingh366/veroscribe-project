@@ -6,12 +6,14 @@ import {
   type CreateBookingInput
 } from "@veroscribe/shared";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { createBooking } from "@/lib/api";
+import { useBookingStore } from "@/stores/bookingStore";
 
 type CreateBookingFormValues = z.input<typeof createBookingInputSchema>;
 
@@ -23,23 +25,58 @@ export function PatientDetailsForm({
   slotId: string;
 }) {
   const router = useRouter();
+  const details = useBookingStore((state) => state.details);
+  const setBookingId = useBookingStore((state) => state.setBookingId);
+  const setDetails = useBookingStore((state) => state.setDetails);
+  const visitType = useBookingStore((state) => state.visitType);
   const {
     register,
     handleSubmit,
     setError,
+    watch,
     formState: { errors, isSubmitting }
   } = useForm<CreateBookingFormValues, undefined, CreateBookingInput>({
     resolver: zodResolver(createBookingInputSchema),
     defaultValues: {
+      insurance: details.insurance,
+      patientDateOfBirth: details.patientDateOfBirth,
+      patientEmail: details.patientEmail,
+      patientName: details.patientName,
+      patientPhone: details.patientPhone,
       physicianId,
+      reasonForVisit: details.reasonForVisit,
       slotId,
-      visitType: "In-person"
+      visitType
     }
   });
 
+  useEffect(() => {
+    const subscription = watch((values) => {
+      setDetails({
+        insurance: values.insurance,
+        patientDateOfBirth: values.patientDateOfBirth,
+        patientEmail: values.patientEmail,
+        patientName: values.patientName,
+        patientPhone: values.patientPhone,
+        reasonForVisit: values.reasonForVisit
+      });
+    });
+
+    return () => subscription.unsubscribe();
+  }, [setDetails, watch]);
+
   const onSubmit = async (values: CreateBookingInput) => {
     try {
+      setDetails({
+        insurance: values.insurance,
+        patientDateOfBirth: values.patientDateOfBirth,
+        patientEmail: values.patientEmail,
+        patientName: values.patientName,
+        patientPhone: values.patientPhone,
+        reasonForVisit: values.reasonForVisit
+      });
       const booking = await createBooking(values);
+      setBookingId(booking.id);
       router.push(`/book/confirmation/${booking.id}`);
     } catch {
       setError("root", {
@@ -60,6 +97,13 @@ export function PatientDetailsForm({
         error={errors.patientName?.message}
       />
       <div className="grid gap-4 md:grid-cols-2">
+        <Input
+          autoComplete="bday"
+          label="Date of birth"
+          type="date"
+          {...register("patientDateOfBirth")}
+          error={errors.patientDateOfBirth?.message}
+        />
         <Input
           autoComplete="email"
           inputMode="email"

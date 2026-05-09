@@ -1,34 +1,20 @@
-import { redirect } from "next/navigation";
-import { BookingProgress } from "@/components/booking/BookingProgress";
-import { PatientDetailsForm } from "@/components/booking/PatientDetailsForm";
+import { BookingSidebar } from "@/components/booking/BookingSidebar";
+import { PatientDetailsStep } from "@/components/booking/PatientDetailsStep";
 import { Card } from "@/components/ui/Card";
 import { getPhysician } from "@/lib/api";
 
 export default async function DetailsPage({
-  params,
-  searchParams
+  params
 }: {
   params: Promise<{ physicianId: string }>;
-  searchParams: Promise<{ slot?: string }>;
 }) {
-  const [{ physicianId }, { slot }] = await Promise.all([params, searchParams]);
-  if (!slot) redirect(`/book/${physicianId}/time`);
-
+  const { physicianId } = await params;
   const physician = await getPhysician(physicianId);
 
   return (
-    <main className="min-h-screen bg-bg px-5 py-6 md:px-10 md:py-8">
+    <main className="min-h-[calc(100vh-65px)] bg-bg px-5 py-6 md:px-10 md:py-8">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[260px_1fr]">
-        <aside>
-          <BookingProgress step={3} />
-          <Card className="mt-6">
-            <p className="mb-3 text-xs font-medium uppercase tracking-[0.06em] text-fg-muted">
-              Your provider
-            </p>
-            <p className="text-sm font-semibold">{physician.name}</p>
-            <p className="text-xs text-fg-muted">{physician.specialty}</p>
-          </Card>
-        </aside>
+        <BookingSidebar physician={physician} step={3} />
         <section>
           <p className="text-xs font-medium uppercase tracking-[0.06em] text-fg-muted">
             Step 3 of 4
@@ -40,7 +26,7 @@ export default async function DetailsPage({
             This helps the provider prepare for your visit.
           </p>
           <Card className="mt-6 p-5 md:p-7">
-            <PatientDetailsForm physicianId={physicianId} slotId={slot} />
+            <PatientDetailsStep physicianId={physicianId} />
           </Card>
         </section>
       </div>

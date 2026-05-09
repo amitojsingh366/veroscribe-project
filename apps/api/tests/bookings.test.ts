@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { availabilitySlots } from "@veroscribe/db";
+import { eq } from "drizzle-orm";
 import { testClient } from "hono/testing";
 import { app } from "../src/app";
+import { db } from "../src/lib/db";
 import { resetTestDb, seedOnePhysicianAndSlot } from "./helpers";
 
 const client = testClient(app);
@@ -23,6 +26,7 @@ describe("bookings routes", () => {
         patientName: "Jane Roe",
         patientEmail: "jane@example.com",
         patientPhone: "+1 555 010 1234",
+        patientDateOfBirth: "1988-04-18",
         reasonForVisit: "Annual checkup",
         visitType: "In-person"
       }
@@ -43,11 +47,65 @@ describe("bookings routes", () => {
         patientName: "Jane Roe",
         patientEmail: "not-an-email",
         patientPhone: "+1 555 010 1234",
+        patientDateOfBirth: "1988-04-18",
         reasonForVisit: "Annual checkup",
         visitType: "In-person"
       }
     });
 
     expect(res.status).toBe(400);
+  });
+
+  it("reschedules a booking into an available slot", async () => {
+    const { physician, slot } = await seedOnePhysicianAndSlot();
+    const nextStartAt = new Date("2026-05-12T10:00:00-07:00");
+    const [nextSlot] = await db
+      .insert(availabilitySlots)
+      .values({
+        physicianId: physician.id,
+        startAt: nextStartAt,
+        endAt: new Date(nextStartAt.getTime() + 30 * 60_000),
+        status: "available"
+      })
+      .returning();
+
+    if (!nextSlot) throw new Error("Expected reschedule slot");
+
+    const createRes = await client.api.bookings.$post({
+      json: {
+        physicianId: physician.id,
+        slotId: slot.id,
+        patientName: "Jane Roe",
+        patientEmail: "jane@example.com",
+        patientPhone: "+1 555 010 1234",
+        patientDateOfBirth: "1988-04-18",
+        reasonForVisit: "Annual checkup",
+        visitType: "In-person"
+      }
+    });
+    const booking = await createRes.json();
+    if (!("id" in booking)) throw new Error("Expected booking response");
+
+    const res = await client.api.bookings[":id"].$patch({
+      json: { slotId: nextSlot.id },
+      param: { id: booking.id }
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    if (!("slotId" in body)) throw new Error("Expected updated booking response");
+    expect(body.slotId).toBe(nextSlot.id);
+
+    const [oldSlot] = await db
+      .select()
+      .from(availabilitySlots)
+      .where(eq(availabilitySlots.id, slot.id));
+    const [updatedSlot] = await db
+      .select()
+      .from(availabilitySlots)
+      .where(eq(availabilitySlots.id, nextSlot.id));
+
+    expect(oldSlot?.status).toBe("available");
+    expect(updatedSlot?.status).toBe("booked");
   });
 });
