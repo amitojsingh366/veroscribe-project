@@ -140,6 +140,7 @@ function isSlotAvailable(
 
 const seedBookings = [
   {
+    physicianInitials: "AH",
     patient: "Eleanor Chen",
     email: "eleanor.chen@example.com",
     phone: "(415) 555-0182",
@@ -157,6 +158,7 @@ const seedBookings = [
     notes: "Patient requests blood draw same visit."
   },
   {
+    physicianInitials: "AH",
     patient: "Marcus Whitfield",
     email: "marcus.whitfield@example.com",
     phone: "(415) 555-0114",
@@ -174,57 +176,7 @@ const seedBookings = [
     notes: "First-time patient. Needs intake form."
   },
   {
-    patient: "Sofia Reyes",
-    email: "sofia.reyes@example.com",
-    phone: "(415) 555-0138",
-    dateOfBirth: "1991-08-03",
-    initials: "SR",
-    date: "Tue, May 12",
-    time: "11:00 AM",
-    duration: 20,
-    reason: "Medication refill - sertraline",
-    status: "confirmed",
-    visitType: "Telehealth",
-    requested: "2026-05-05T16:30:00-07:00",
-    insurance: "Self-pay",
-    flagged: false,
-    notes: ""
-  },
-  {
-    patient: "Daniel Park",
-    email: "daniel.park@example.com",
-    phone: "(415) 555-0150",
-    dateOfBirth: "1984-12-11",
-    initials: "DP",
-    date: "Tue, May 12",
-    time: "1:30 PM",
-    duration: 30,
-    reason: "Follow-up - knee MRI results",
-    status: "pending",
-    visitType: "In-person",
-    requested: "2026-05-07T11:48:00-07:00",
-    insurance: "United",
-    flagged: false,
-    notes: ""
-  },
-  {
-    patient: "Aisha Bello",
-    email: "aisha.bello@example.com",
-    phone: "(415) 555-0121",
-    dateOfBirth: "1993-02-24",
-    initials: "AB",
-    date: "Tue, May 12",
-    time: "2:00 PM",
-    duration: 20,
-    reason: "Tension headaches, 3+ weeks",
-    status: "confirmed",
-    visitType: "In-person",
-    requested: "2026-05-04T10:11:00-07:00",
-    insurance: "BlueCross",
-    flagged: false,
-    notes: ""
-  },
-  {
+    physicianInitials: "AH",
     patient: "Theo Lindgren",
     email: "theo.lindgren@example.com",
     phone: "(415) 555-0199",
@@ -242,23 +194,7 @@ const seedBookings = [
     notes: "Patient cancelled - rescheduling next week."
   },
   {
-    patient: "Nadia Rosenbaum",
-    email: "nadia.rosenbaum@example.com",
-    phone: "(415) 555-0188",
-    dateOfBirth: "1990-11-17",
-    initials: "NR",
-    date: "Wed, May 13",
-    time: "9:00 AM",
-    duration: 30,
-    reason: "New patient consult",
-    status: "pending",
-    visitType: "In-person",
-    requested: "2026-05-07T15:55:00-07:00",
-    insurance: "Cigna",
-    flagged: true,
-    notes: "Needs records transfer from previous PCP."
-  },
-  {
+    physicianInitials: "AH",
     patient: "Wesley Ahmadi",
     email: "wesley.ahmadi@example.com",
     phone: "(415) 555-0147",
@@ -274,6 +210,222 @@ const seedBookings = [
     insurance: "BlueCross",
     flagged: false,
     notes: ""
+  },
+  {
+    physicianInitials: "MO",
+    patient: "Grace Thompson",
+    email: "grace.thompson@example.com",
+    phone: "(415) 555-0162",
+    dateOfBirth: "1972-09-21",
+    initials: "GT",
+    date: "Mon, May 11",
+    time: "9:00 AM",
+    duration: 30,
+    reason: "Diabetes follow-up and A1C review",
+    status: "confirmed",
+    visitType: "In-person",
+    requested: "2026-05-04T13:18:00-07:00",
+    insurance: "BlueCross",
+    flagged: false,
+    notes: "Bring home glucose logs."
+  },
+  {
+    physicianInitials: "MO",
+    patient: "Omar Haddad",
+    email: "omar.haddad@example.com",
+    phone: "(415) 555-0176",
+    dateOfBirth: "1968-03-14",
+    initials: "OH",
+    date: "Tue, May 12",
+    time: "10:00 AM",
+    duration: 20,
+    reason: "Blood pressure medication adjustment",
+    status: "pending",
+    visitType: "In-person",
+    requested: "2026-05-07T10:36:00-07:00",
+    insurance: "United",
+    flagged: true,
+    notes: "Recent home readings elevated."
+  },
+  {
+    physicianInitials: "MO",
+    patient: "Lena Morales",
+    email: "lena.morales@example.com",
+    phone: "(415) 555-0107",
+    dateOfBirth: "1981-07-02",
+    initials: "LM",
+    date: "Thu, May 14",
+    time: "2:00 PM",
+    duration: 30,
+    reason: "Follow-up for chest tightness",
+    status: "confirmed",
+    visitType: "Telehealth",
+    requested: "2026-05-06T12:24:00-07:00",
+    insurance: "Self-pay",
+    flagged: false,
+    notes: "Cardiology referral already sent."
+  },
+  {
+    physicianInitials: "MO",
+    patient: "Ivy Singh",
+    email: "ivy.singh@example.com",
+    phone: "(415) 555-0159",
+    dateOfBirth: "1994-10-05",
+    initials: "IS",
+    date: "Fri, May 15",
+    time: "9:30 AM",
+    duration: 20,
+    reason: "Annual labs and thyroid panel",
+    status: "cancelled",
+    visitType: "In-person",
+    requested: "2026-05-05T09:42:00-07:00",
+    insurance: "Aetna",
+    flagged: false,
+    notes: "Patient cancelled after finding a closer lab."
+  },
+  {
+    physicianInitials: "PS",
+    patient: "Maya Patel",
+    email: "maya.patel@example.com",
+    phone: "(415) 555-0191",
+    dateOfBirth: "1998-05-22",
+    initials: "MP",
+    date: "Tue, May 12",
+    time: "9:00 AM",
+    duration: 20,
+    reason: "Acne flare and treatment options",
+    status: "pending",
+    visitType: "In-person",
+    requested: "2026-05-07T08:27:00-07:00",
+    insurance: "Aetna",
+    flagged: false,
+    notes: ""
+  },
+  {
+    physicianInitials: "PS",
+    patient: "Calvin Brooks",
+    email: "calvin.brooks@example.com",
+    phone: "(415) 555-0131",
+    dateOfBirth: "1979-01-12",
+    initials: "CB",
+    date: "Fri, May 15",
+    time: "1:30 PM",
+    duration: 30,
+    reason: "Changing mole check",
+    status: "confirmed",
+    visitType: "In-person",
+    requested: "2026-05-05T15:09:00-07:00",
+    insurance: "Cigna",
+    flagged: true,
+    notes: "Patient uploaded photos in intake packet."
+  },
+  {
+    physicianInitials: "PS",
+    patient: "Rachel Kim",
+    email: "rachel.kim@example.com",
+    phone: "(415) 555-0142",
+    dateOfBirth: "1987-11-30",
+    initials: "RK",
+    date: "Sat, May 16",
+    time: "10:30 AM",
+    duration: 20,
+    reason: "Eczema follow-up",
+    status: "confirmed",
+    visitType: "Telehealth",
+    requested: "2026-05-06T11:33:00-07:00",
+    insurance: "Self-pay",
+    flagged: false,
+    notes: ""
+  },
+  {
+    physicianInitials: "PS",
+    patient: "Noah Stern",
+    email: "noah.stern@example.com",
+    phone: "(415) 555-0128",
+    dateOfBirth: "1992-04-08",
+    initials: "NS",
+    date: "Tue, May 12",
+    time: "2:30 PM",
+    duration: 20,
+    reason: "Rash after new detergent",
+    status: "completed",
+    visitType: "Telehealth",
+    requested: "2026-05-04T16:45:00-07:00",
+    insurance: "BlueCross",
+    flagged: false,
+    notes: "Improved after topical steroid."
+  },
+  {
+    physicianInitials: "JR",
+    patient: "Mina Alvarez",
+    email: "mina.alvarez@example.com",
+    phone: "(415) 555-0184",
+    dateOfBirth: "2015-02-18",
+    initials: "MA",
+    date: "Mon, May 11",
+    time: "8:30 AM",
+    duration: 30,
+    reason: "School physical",
+    status: "confirmed",
+    visitType: "In-person",
+    requested: "2026-05-03T14:20:00-07:00",
+    insurance: "Medicaid",
+    flagged: false,
+    notes: "Needs sports clearance form."
+  },
+  {
+    physicianInitials: "JR",
+    patient: "Ethan Brooks",
+    email: "ethan.brooks@example.com",
+    phone: "(415) 555-0168",
+    dateOfBirth: "2012-06-26",
+    initials: "EB",
+    date: "Wed, May 13",
+    time: "9:00 AM",
+    duration: 20,
+    reason: "Asthma symptoms after soccer",
+    status: "pending",
+    visitType: "In-person",
+    requested: "2026-05-07T13:02:00-07:00",
+    insurance: "BlueCross",
+    flagged: true,
+    notes: "Parent reports increased rescue inhaler use."
+  },
+  {
+    physicianInitials: "JR",
+    patient: "Harper Nguyen",
+    email: "harper.nguyen@example.com",
+    phone: "(415) 555-0119",
+    dateOfBirth: "2020-12-04",
+    initials: "HN",
+    date: "Thu, May 14",
+    time: "10:30 AM",
+    duration: 30,
+    reason: "Well-child check",
+    status: "confirmed",
+    visitType: "In-person",
+    requested: "2026-05-05T10:25:00-07:00",
+    insurance: "United",
+    flagged: false,
+    notes: ""
+  },
+  {
+    physicianInitials: "JR",
+    patient: "Leo Martin",
+    email: "leo.martin@example.com",
+    phone: "(415) 555-0179",
+    dateOfBirth: "2014-09-19",
+    initials: "LM",
+    date: "Sat, May 16",
+    time: "1:30 PM",
+    duration: 20,
+    reason: "ADHD medication follow-up",
+    status: "cancelled",
+    visitType: "Telehealth",
+    requested: "2026-05-06T17:12:00-07:00",
+    insurance: "BlueCross",
+    flagged: false,
+    notes: "Parent cancelled and will call back."
   }
 ] as const;
 
@@ -308,11 +460,15 @@ async function main() {
     .values(seedPhysicians)
     .returning();
 
-  const hartwell = insertedPhysicians[0];
-  if (!hartwell) throw new Error("Expected at least one physician");
+  const physicianByInitials = new Map(
+    insertedPhysicians.map((physician) => [physician.initials, physician])
+  );
 
   const bookingsBySlot = new Map(
-    seedBookings.map((booking) => [`${booking.date}:${booking.time}`, booking])
+    seedBookings.map((booking) => [
+      `${booking.physicianInitials}:${booking.date}:${booking.time}`,
+      booking
+    ])
   );
   const slotByKey = new Map<string, string>();
 
@@ -323,9 +479,9 @@ async function main() {
     for (const day of prototypeDays) {
       for (const slot of prototypeSlots) {
         const startAt = slotDateTime(day.isoDate, slot.label);
-        const booking = physician.id === hartwell.id
-          ? bookingsBySlot.get(`${day.label}:${slot.label}`)
-          : undefined;
+        const booking = bookingsBySlot.get(
+          `${physician.initials}:${day.label}:${slot.label}`
+        );
         const isBooked = Boolean(booking && booking.status !== "cancelled");
 
         rows.push({
@@ -343,18 +499,16 @@ async function main() {
 
     const insertedSlots = await db.insert(availabilitySlots).values(rows).returning();
 
-    if (physician.id === hartwell.id) {
-      for (const slot of insertedSlots) {
-        const day = prototypeDays.find(
-          (candidate) => candidate.isoDate === slot.startAt.toISOString().slice(0, 10)
-        );
-        const label = prototypeSlots.find((candidate) => {
-          const date = slotDateTime(day?.isoDate ?? "", candidate.label);
-          return date.getTime() === slot.startAt.getTime();
-        });
-        if (day && label) {
-          slotByKey.set(`${day.label}:${label.label}`, slot.id);
-        }
+    for (const slot of insertedSlots) {
+      const day = prototypeDays.find(
+        (candidate) => candidate.isoDate === slot.startAt.toISOString().slice(0, 10)
+      );
+      const label = prototypeSlots.find((candidate) => {
+        const date = slotDateTime(day?.isoDate ?? "", candidate.label);
+        return date.getTime() === slot.startAt.getTime();
+      });
+      if (day && label) {
+        slotByKey.set(`${physician.initials}:${day.label}:${label.label}`, slot.id);
       }
     }
 
@@ -363,11 +517,22 @@ async function main() {
 
   console.log("Inserting demo bookings");
   const bookingRows: NewBooking[] = seedBookings.map((booking) => {
-    const slotId = slotByKey.get(`${booking.date}:${booking.time}`);
-    if (!slotId) throw new Error(`Missing slot for ${booking.date} ${booking.time}`);
+    const physician = physicianByInitials.get(booking.physicianInitials);
+    if (!physician) {
+      throw new Error(`Missing physician for ${booking.physicianInitials}`);
+    }
+
+    const slotId = slotByKey.get(
+      `${booking.physicianInitials}:${booking.date}:${booking.time}`
+    );
+    if (!slotId) {
+      throw new Error(
+        `Missing slot for ${booking.physicianInitials} ${booking.date} ${booking.time}`
+      );
+    }
 
     return {
-      physicianId: hartwell.id,
+      physicianId: physician.id,
       slotId,
       patientName: booking.patient,
       patientEmail: booking.email,
@@ -386,16 +551,16 @@ async function main() {
 
   await db.insert(bookings).values(bookingRows);
 
-  const [cancelled] = await db
+  const cancelledBookings = await db
     .select()
     .from(bookings)
     .where(eq(bookings.status, "cancelled"));
 
-  if (cancelled) {
+  for (const booking of cancelledBookings) {
     await db
       .update(availabilitySlots)
       .set({ status: "available" })
-      .where(eq(availabilitySlots.id, cancelled.slotId));
+      .where(eq(availabilitySlots.id, booking.slotId));
   }
 
   console.log("Seed complete");

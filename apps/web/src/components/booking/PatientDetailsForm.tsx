@@ -117,8 +117,8 @@ export function PatientDetailsForm({
           {...register("patientPhone")}
           error={errors.patientPhone?.message}
         />
+        <Input label="Insurance" {...register("insurance")} />
       </div>
-      <Input label="Insurance" {...register("insurance")} />
       <Textarea
         label="Reason for visit"
         rows={5}

@@ -2,6 +2,7 @@
 
 import type { BookingStatus, BookingWithRelations } from "@veroscribe/shared";
 import { Building2, Video } from "lucide-react";
+import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { formatDate, formatTime, initialsFor } from "@/lib/format";
@@ -11,6 +12,7 @@ const tabs: Array<{ value: BookingStatus | "all"; label: string }> = [
   { value: "all", label: "All" },
   { value: "pending", label: "Pending" },
   { value: "confirmed", label: "Confirmed" },
+  { value: "completed", label: "Completed" },
   { value: "cancelled", label: "Cancelled" }
 ];
 
@@ -38,15 +40,18 @@ export function BookingsList({
   }, {});
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col">
+    <section
+      className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+      id="bookings-list"
+    >
       <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex gap-1 overflow-x-auto border-b border-border">
+        <div className="flex min-w-0 gap-1 overflow-x-auto border-b border-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {tabs.map((tab) => {
             const active = status === tab.value;
 
             return (
               <button
-                className="border-b-2 px-3 py-2 text-sm font-medium data-[active=true]:border-primary data-[active=false]:border-transparent data-[active=false]:text-fg-muted"
+                className="border-b-2 px-3 py-2 text-sm font-medium data-[active=true]:border-primary data-[active=false]:border-transparent data-[active=false]:text-fg-muted cursor-pointer"
                 data-active={active}
                 key={tab.value}
                 onClick={() => onSelectStatus(tab.value)}
@@ -72,39 +77,43 @@ export function BookingsList({
         </div>
       </div>
 
-      <Card className="min-h-0 flex-1 overflow-hidden p-0">
-        <div className="hidden grid-cols-[1.4fr_1.4fr_1fr_0.8fr_0.9fr] border-b border-border px-4 py-3 text-xs font-medium uppercase tracking-[0.06em] text-fg-muted lg:grid">
+      <Card className="min-h-0 min-w-0 flex flex-1 flex-col p-0">
+        <div className="hidden min-w-0 grid-cols-[1.4fr_1.4fr_1fr_0.8fr_0.9fr] border-b border-border px-4 py-3 text-xs font-medium uppercase tracking-[0.06em] text-fg-muted lg:grid">
           <span>Patient</span>
           <span>Reason</span>
           <span>When</span>
           <span>Type</span>
           <span>Status</span>
         </div>
-        <div className="max-h-[60vh] overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           {bookings.length ? (
             bookings.map((booking) => (
-              <button
-                className="grid w-full items-center gap-3 border-b border-border-muted px-4 py-4 text-left transition hover:bg-[#FAF8F4] data-[selected=true]:border-l-4 data-[selected=true]:border-l-primary data-[selected=true]:bg-[#FAF8F4] lg:grid-cols-[1.4fr_1.4fr_1fr_0.8fr_0.9fr]"
+              <Link
+                className="grid w-full min-w-0 items-center gap-3 border-b border-border-muted px-4 py-4 text-left transition hover:bg-[#FAF8F4] data-[selected=true]:border-l-4 data-[selected=true]:border-l-primary data-[selected=true]:bg-[#FAF8F4] lg:grid-cols-[1.4fr_1.4fr_1fr_0.8fr_0.9fr]"
                 data-selected={booking.id === selectedId}
+                href={`/admin/${booking.id}`}
                 key={booking.id}
                 onClick={() => onSelectBooking(booking.id)}
-                type="button"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <Avatar
                     initials={initialsFor(booking.patientName)}
                     name={booking.patientName}
                     size="sm"
                   />
-                  <div>
-                    <p className="text-sm font-semibold">{booking.patientName}</p>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">
+                      {booking.patientName}
+                    </p>
                     <p className="text-xs text-fg-muted">
                       {booking.insurance ?? "Self-pay"}
                     </p>
                   </div>
                 </div>
-                <p className="truncate text-sm text-fg">{booking.reasonForVisit}</p>
-                <div>
+                <p className="min-w-0 truncate text-sm text-fg">
+                  {booking.reasonForVisit}
+                </p>
+                <div className="min-w-0">
                   <p className="text-sm font-medium">
                     {booking.slot ? formatDate(booking.slot.startAt) : "TBD"}
                   </p>
@@ -121,7 +130,7 @@ export function BookingsList({
                   {booking.visitType}
                 </span>
                 <StatusBadge status={booking.status} />
-              </button>
+              </Link>
             ))
           ) : (
             <div className="p-6 text-sm text-fg-muted">

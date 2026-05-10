@@ -1,7 +1,7 @@
 import { clsx } from "clsx";
 import type { ButtonHTMLAttributes } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive" | "success";
 type ButtonSize = "sm" | "md" | "lg";
 
 const variants: Record<ButtonVariant, string> = {
@@ -9,7 +9,9 @@ const variants: Record<ButtonVariant, string> = {
   secondary: "bg-surface text-fg border-border hover:border-[#d8d3cb]",
   ghost: "bg-transparent text-fg border-transparent hover:bg-black/[0.04]",
   destructive:
-    "bg-status-cancelled-bg text-status-cancelled-fg border-[#ECC9C3] hover:border-status-cancelled-fg"
+    "bg-status-cancelled-bg text-status-cancelled-fg border-[#ECC9C3] hover:border-status-cancelled-fg",
+  success:
+    "bg-status-confirmed-bg text-status-confirmed-fg border-[#C9E5D6] hover:border-status-confirmed-fg"
 };
 
 const sizes: Record<ButtonSize, string> = {
@@ -33,7 +35,7 @@ export function Button({
   return (
     <button
       className={clsx(
-        "inline-flex items-center justify-center gap-2 rounded-full border font-medium transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border font-medium transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60",
         variants[variant],
         sizes[size],
         className
