@@ -4,22 +4,38 @@ import type { BookingStatus } from "@veroscribe/shared";
 import { create } from "zustand";
 
 type AdminStore = {
-  selectedBookingId?: string;
+  bookingPhysicianSyncId?: string;
   physicianId?: string;
   detailLayoutOpen: boolean;
   status: BookingStatus | "all";
+  clearBookingPhysicianSync: () => void;
   setDetailLayoutOpen: (detailLayoutOpen: boolean) => void;
-  setSelectedBookingId: (selectedBookingId?: string) => void;
-  setPhysicianId: (physicianId: string) => void;
+  setPhysicianId: (
+    physicianId: string,
+    options?: { bookingPhysicianSyncId?: string }
+  ) => void;
   setStatus: (status: BookingStatus | "all") => void;
+  syncPhysicianFromBooking: (bookingId: string, physicianId: string) => void;
 };
 
 export const useAdminStore = create<AdminStore>((set) => ({
   detailLayoutOpen: false,
   status: "all",
+  clearBookingPhysicianSync: () => set({ bookingPhysicianSyncId: undefined }),
   setDetailLayoutOpen: (detailLayoutOpen) => set({ detailLayoutOpen }),
-  setSelectedBookingId: (selectedBookingId) => set({ selectedBookingId }),
-  setPhysicianId: (physicianId) =>
-    set({ physicianId, selectedBookingId: undefined }),
-  setStatus: (status) => set({ selectedBookingId: undefined, status })
+  setPhysicianId: (physicianId, options) =>
+    set({
+      bookingPhysicianSyncId: options?.bookingPhysicianSyncId,
+      physicianId
+    }),
+  setStatus: (status) => set({ status }),
+  syncPhysicianFromBooking: (bookingId, physicianId) =>
+    set((state) => {
+      if (state.bookingPhysicianSyncId === bookingId) return {};
+
+      return {
+        bookingPhysicianSyncId: bookingId,
+        physicianId
+      };
+    })
 }));

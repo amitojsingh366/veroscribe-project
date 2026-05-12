@@ -27,13 +27,13 @@ type BookingStore = {
   selectedDate?: string;
   slot?: SlotSummary;
   visitType: VisitType;
-  clearSlot: () => void;
   setBookingId: (bookingId: string) => void;
   setDetails: (details: PatientDetailsDraft) => void;
   setPhysician: (physician: PhysicianSummary) => void;
   setSelectedDate: (selectedDate: string) => void;
   setSlot: (slot: SlotSummary) => void;
   setVisitType: (visitType: VisitType) => void;
+  startBookingForPhysician: (physician: PhysicianSummary) => void;
 };
 
 function serializeSlot(slot: SlotSummary): SlotSummary {
@@ -47,10 +47,10 @@ function serializeSlot(slot: SlotSummary): SlotSummary {
 export const useBookingStore = create<BookingStore>((set) => ({
   details: {},
   visitType: "In-person",
-  clearSlot: () => set({ selectedDate: undefined, slot: undefined }),
   setBookingId: (bookingId) => set({ bookingId }),
   setDetails: (details) =>
     set((state) => ({
+      bookingId: undefined,
       details: {
         ...state.details,
         ...details
@@ -58,6 +58,7 @@ export const useBookingStore = create<BookingStore>((set) => ({
     })),
   setPhysician: (physician) =>
     set((state) => ({
+      bookingId: undefined,
       physician,
       selectedDate:
         state.physician?.id && state.physician.id !== physician.id
@@ -68,11 +69,20 @@ export const useBookingStore = create<BookingStore>((set) => ({
           ? undefined
           : state.slot
     })),
-  setSelectedDate: (selectedDate) => set({ selectedDate }),
+  setSelectedDate: (selectedDate) =>
+    set({ bookingId: undefined, selectedDate, slot: undefined }),
   setSlot: (slot) =>
     set({
+      bookingId: undefined,
       selectedDate: formatDateKey(slot.startAt),
       slot: serializeSlot(slot)
     }),
-  setVisitType: (visitType) => set({ visitType })
+  setVisitType: (visitType) => set({ bookingId: undefined, visitType }),
+  startBookingForPhysician: (physician) =>
+    set({
+      bookingId: undefined,
+      physician,
+      selectedDate: undefined,
+      slot: undefined
+    })
 }));

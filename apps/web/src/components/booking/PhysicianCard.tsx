@@ -14,10 +14,12 @@ export function PhysicianCard({
   physician: Physician;
   href: string;
 }) {
-  const setPhysician = useBookingStore((state) => state.setPhysician);
+  const startBookingForPhysician = useBookingStore(
+    (state) => state.startBookingForPhysician
+  );
 
   return (
-    <Link href={href} onClick={() => setPhysician(physician)}>
+    <Link href={href} onClick={() => startBookingForPhysician(physician)}>
       <Card className="group flex h-full gap-4 rounded-[18px] p-4 transition hover:border-[#c9c2b6]">
         <Avatar
           initials={physician.initials}

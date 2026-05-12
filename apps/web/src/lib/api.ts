@@ -8,7 +8,12 @@ import type {
 import { env } from "@/env";
 
 function apiUrl(path: string) {
-  return `${env.NEXT_PUBLIC_API_URL}${path}`;
+  const baseUrl =
+    typeof window === "undefined"
+      ? (env.API_INTERNAL_URL ?? env.NEXT_PUBLIC_API_URL)
+      : env.NEXT_PUBLIC_API_URL;
+
+  return `${baseUrl}${path}`;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

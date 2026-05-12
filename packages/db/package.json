@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "tsc --noEmit",
+    "reset": "bun run src/reset.ts",
     "generate": "drizzle-kit generate",
     "push": "drizzle-kit push --force",
     "migrate": "bun run src/migrate.ts",

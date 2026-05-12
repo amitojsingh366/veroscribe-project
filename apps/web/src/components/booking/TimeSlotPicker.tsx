@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import {
   AvailabilityDatePicker,
   type AvailabilityDay
@@ -52,7 +52,6 @@ export function TimeSlotPicker({
   slots: Slot[];
 }) {
   const router = useRouter();
-  const clearSlot = useBookingStore((state) => state.clearSlot);
   const selectedStoreDate = useBookingStore((state) => state.selectedDate);
   const selectedStoreSlotId = useBookingStore((state) => state.slot?.id);
   const selectedStoreVisitType = useBookingStore((state) => state.visitType);
@@ -136,17 +135,31 @@ export function TimeSlotPicker({
     [groupedSlots, weekStartKey]
   );
 
-  const { handleSubmit, register, setValue, watch } = useForm<TimeSelectionValues>({
-    defaultValues: {
-      dateKey: initialDateKey,
-      slotId: initialSlot?.status === "available" ? initialSlot.id : "",
-      visitType: selectedStoreVisitType
-    }
-  });
+  const defaultSlotId = initialSlot?.status === "available" ? initialSlot.id : "";
+  const { control, handleSubmit, register, setValue } =
+    useForm<TimeSelectionValues>({
+      defaultValues: {
+        dateKey: initialDateKey,
+        slotId: defaultSlotId,
+        visitType: selectedStoreVisitType
+      }
+    });
 
-  const selectedDateKey = watch("dateKey");
-  const selectedSlotId = watch("slotId");
-  const selectedVisitType = watch("visitType");
+  const selectedDateKey = useWatch({
+    control,
+    defaultValue: initialDateKey,
+    name: "dateKey"
+  });
+  const selectedSlotId = useWatch({
+    control,
+    defaultValue: defaultSlotId,
+    name: "slotId"
+  });
+  const selectedVisitType = useWatch({
+    control,
+    defaultValue: selectedStoreVisitType,
+    name: "visitType"
+  });
   const selectedDaySlots = groupedSlots[selectedDateKey] ?? [];
   const selectedSlot = slots.find((slot) => slot.id === selectedSlotId);
   const activeCalendarDay =
@@ -162,7 +175,6 @@ export function TimeSlotPicker({
   ];
 
   const selectDate = (dateKey: string) => {
-    clearSlot();
     setSelectedDate(dateKey);
     setValue("dateKey", dateKey);
     setValue("slotId", "");

@@ -19,14 +19,36 @@ services:
     networks:
       - veroscribe
 
+  db-setup:
+    image: veroscribe-api:local
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-veroscribe}:${POSTGRES_PASSWORD:-veroscribe}@db:5432/${POSTGRES_DB:-veroscribe}
+    command: >
+      sh -c "bun run db:reset &&
+             bun run db:push &&
+             bun run db:seed"
+    restart: "no"
+    networks:
+      - veroscribe
+
   api:
+    image: veroscribe-api:local
+    pull_policy: build
     build:
       context: .
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
     depends_on:
-      db:
-        condition: service_healthy
+      db-setup:
+        condition: service_completed_successfully
     environment:
       NODE_ENV: production
       DATABASE_URL: postgres://${POSTGRES_USER:-veroscribe}:${POSTGRES_PASSWORD:-veroscribe}@db:5432/${POSTGRES_DB:-veroscribe}
@@ -38,6 +60,8 @@ services:
       - veroscribe
 
   web:
+    image: veroscribe-web:local
+    pull_policy: build
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -47,6 +71,7 @@ services:
         condition: service_started
     environment:
       NODE_ENV: production
+      API_INTERNAL_URL: http://api:3001
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
       PORT: "3000"
     ports:

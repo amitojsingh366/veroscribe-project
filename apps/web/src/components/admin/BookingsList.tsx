@@ -12,14 +12,12 @@ import { BookingListRow } from "./BookingListRow";
 export function BookingsList({
   allBookings,
   bookings,
-  onSelectBooking,
   onSelectStatus,
   selectedId,
   status
 }: {
   allBookings: BookingWithRelations[];
   bookings: BookingWithRelations[];
-  onSelectBooking: (bookingId: string) => void;
   onSelectStatus: (status: BookingListStatus) => void;
   selectedId?: string;
   status: BookingListStatus;
@@ -59,7 +57,6 @@ export function BookingsList({
               <BookingListRow
                 booking={booking}
                 key={booking.id}
-                onSelectBooking={onSelectBooking}
                 selected={booking.id === selectedId}
               />
             ))

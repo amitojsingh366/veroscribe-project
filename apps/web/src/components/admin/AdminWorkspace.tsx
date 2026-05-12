@@ -28,6 +28,9 @@ export function AdminWorkspace({
 }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const clearBookingPhysicianSync = useAdminStore(
+    (state) => state.clearBookingPhysicianSync
+  );
   const persistedDetailLayoutOpen = useAdminStore(
     (state) => state.detailLayoutOpen
   );
@@ -36,10 +39,10 @@ export function AdminWorkspace({
     (state) => state.setDetailLayoutOpen
   );
   const setPhysicianId = useAdminStore((state) => state.setPhysicianId);
-  const setSelectedBookingId = useAdminStore(
-    (state) => state.setSelectedBookingId
-  );
   const setStatus = useAdminStore((state) => state.setStatus);
+  const syncPhysicianFromBooking = useAdminStore(
+    (state) => state.syncPhysicianFromBooking
+  );
   const status = useAdminStore((state) => state.status);
   const selectedBooking = selectedBookingId
     ? allBookings.find((booking) => booking.id === selectedBookingId)
@@ -81,17 +84,24 @@ export function AdminWorkspace({
   );
 
   useEffect(() => {
-    if (selectedBooking?.physicianId) {
-      if (physicianId !== selectedBooking.physicianId) {
-        setPhysicianId(selectedBooking.physicianId);
-      }
+    if (selectedBooking?.id && selectedBooking.physicianId) {
+      syncPhysicianFromBooking(selectedBooking.id, selectedBooking.physicianId);
       return;
     }
 
+    clearBookingPhysicianSync();
     if (!physicianId && initialPhysicianId) {
       setPhysicianId(initialPhysicianId);
     }
-  }, [initialPhysicianId, physicianId, selectedBooking?.physicianId, setPhysicianId]);
+  }, [
+    clearBookingPhysicianSync,
+    initialPhysicianId,
+    physicianId,
+    selectedBooking?.id,
+    selectedBooking?.physicianId,
+    setPhysicianId,
+    syncPhysicianFromBooking
+  ]);
 
   useEffect(() => {
     if (!hasSelectedRoute) {
@@ -217,7 +227,6 @@ export function AdminWorkspace({
         <BookingsList
           allBookings={searchedBookings}
           bookings={bookings}
-          onSelectBooking={setSelectedBookingId}
           onSelectStatus={setStatus}
           selectedId={selectedBooking?.id}
           status={status}

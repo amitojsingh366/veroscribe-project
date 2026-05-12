@@ -9,11 +9,9 @@ import { StatusBadge } from "./StatusBadge";
 
 export function BookingListRow({
   booking,
-  onSelectBooking,
   selected
 }: {
   booking: BookingWithRelations;
-  onSelectBooking: (bookingId: string) => void;
   selected: boolean;
 }) {
   return (
@@ -21,7 +19,6 @@ export function BookingListRow({
       className="grid w-full min-w-0 items-center gap-3 border-b border-border-muted px-4 py-4 text-left transition hover:bg-[#FAF8F4] data-[selected=true]:border-l-4 data-[selected=true]:border-l-primary data-[selected=true]:bg-[#FAF8F4] lg:grid-cols-[1.4fr_1.4fr_1fr_0.8fr_0.9fr]"
       data-selected={selected}
       href={`/admin/${booking.id}`}
-      onClick={() => onSelectBooking(booking.id)}
     >
       <div className="flex min-w-0 items-center gap-3">
         <Avatar

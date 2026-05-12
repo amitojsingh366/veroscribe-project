@@ -12,6 +12,7 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
+    "db:reset": "bun --filter=@veroscribe/db run reset",
     "db:generate": "bun --filter=@veroscribe/db run generate",
     "db:push": "bun --filter=@veroscribe/db run push",
     "db:migrate": "bun --filter=@veroscribe/db run migrate",

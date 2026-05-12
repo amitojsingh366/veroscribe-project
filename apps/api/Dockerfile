@@ -5,6 +5,7 @@ WORKDIR /repo
 FROM base AS deps
 COPY package.json bun.lock turbo.json ./
 COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
 COPY packages/db/package.json packages/db/
 COPY packages/shared/package.json packages/shared/
 COPY packages/eslint-config/package.json packages/eslint-config/
@@ -17,6 +18,7 @@ COPY --from=deps /repo/node_modules ./node_modules
 COPY apps/api ./apps/api
 COPY packages/db ./packages/db
 COPY packages/shared ./packages/shared
+COPY packages/tsconfig ./packages/tsconfig
 COPY package.json bun.lock ./
 ENV NODE_ENV=production API_PORT=3001
 EXPOSE 3001

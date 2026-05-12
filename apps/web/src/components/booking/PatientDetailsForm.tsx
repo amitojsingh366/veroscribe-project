@@ -7,7 +7,7 @@ import {
 } from "@veroscribe/shared";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import type { z } from "zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -30,10 +30,10 @@ export function PatientDetailsForm({
   const setDetails = useBookingStore((state) => state.setDetails);
   const visitType = useBookingStore((state) => state.visitType);
   const {
+    control,
     register,
     handleSubmit,
     setError,
-    watch,
     formState: { errors, isSubmitting }
   } = useForm<CreateBookingFormValues, undefined, CreateBookingInput>({
     resolver: zodResolver(createBookingInputSchema),
@@ -49,21 +49,55 @@ export function PatientDetailsForm({
       visitType
     }
   });
+  const insurance = useWatch({
+    control,
+    defaultValue: details.insurance,
+    name: "insurance"
+  });
+  const patientDateOfBirth = useWatch({
+    control,
+    defaultValue: details.patientDateOfBirth,
+    name: "patientDateOfBirth"
+  });
+  const patientEmail = useWatch({
+    control,
+    defaultValue: details.patientEmail,
+    name: "patientEmail"
+  });
+  const patientName = useWatch({
+    control,
+    defaultValue: details.patientName,
+    name: "patientName"
+  });
+  const patientPhone = useWatch({
+    control,
+    defaultValue: details.patientPhone,
+    name: "patientPhone"
+  });
+  const reasonForVisit = useWatch({
+    control,
+    defaultValue: details.reasonForVisit,
+    name: "reasonForVisit"
+  });
 
   useEffect(() => {
-    const subscription = watch((values) => {
-      setDetails({
-        insurance: values.insurance,
-        patientDateOfBirth: values.patientDateOfBirth,
-        patientEmail: values.patientEmail,
-        patientName: values.patientName,
-        patientPhone: values.patientPhone,
-        reasonForVisit: values.reasonForVisit
-      });
+    setDetails({
+      insurance,
+      patientDateOfBirth,
+      patientEmail,
+      patientName,
+      patientPhone,
+      reasonForVisit
     });
-
-    return () => subscription.unsubscribe();
-  }, [setDetails, watch]);
+  }, [
+    insurance,
+    patientDateOfBirth,
+    patientEmail,
+    patientName,
+    patientPhone,
+    reasonForVisit,
+    setDetails
+  ]);
 
   const onSubmit = async (values: CreateBookingInput) => {
     try {
