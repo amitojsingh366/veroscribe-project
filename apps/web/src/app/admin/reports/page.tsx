@@ -4,7 +4,7 @@ import { AdminPlaceholderPage } from "@/components/admin/AdminPlaceholderPage";
 export default function AdminReportsPage() {
   return (
     <AdminPlaceholderPage
-      description="Reporting would summarize schedule health, request volume, utilization, and clinic operations."
+      description="Reporting will summarize schedule health, request volume, and operations."
       icon={FileText}
       title="Reports"
     />

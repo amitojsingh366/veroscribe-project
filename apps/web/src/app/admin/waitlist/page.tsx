@@ -4,7 +4,7 @@ import { AdminPlaceholderPage } from "@/components/admin/AdminPlaceholderPage";
 export default function AdminWaitlistPage() {
   return (
     <AdminPlaceholderPage
-      description="Waitlist management would help staff fill cancellations and offer earlier openings."
+      description="Waitlist management will help staff fill cancellations and earlier openings."
       icon={Clock}
       title="Waitlist"
     />

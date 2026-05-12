@@ -4,7 +4,7 @@ import { AdminPlaceholderPage } from "@/components/admin/AdminPlaceholderPage";
 export default function AdminRequestsPage() {
   return (
     <AdminPlaceholderPage
-      description="Request triage would collect new patient-submitted appointment requests and review tasks."
+      description="Request triage will collect new patient-submitted appointment requests."
       icon={Bell}
       title="Requests"
     />

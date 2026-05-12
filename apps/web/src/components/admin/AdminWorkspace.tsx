@@ -6,12 +6,43 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BookingDetailPanel } from "@/components/admin/BookingDetailPanel";
 import { BookingsList } from "@/components/admin/BookingsList";
+import { asDate } from "@/lib/format";
 import { useAdminStore } from "@/stores/adminStore";
 import { AdminStatsGrid, type AdminStat } from "./AdminStatsGrid";
 import { AdminWorkspaceHeader } from "./AdminWorkspaceHeader";
 
 const DETAIL_PANEL_EXIT_MS = 220;
 const DETAIL_LAYOUT_EXIT_MS = 300;
+const DAY_MS = 86_400_000;
+
+function pluralize(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function formatDays(value: number) {
+  const rounded = value >= 10 ? Math.round(value) : Number(value.toFixed(1));
+  return `${rounded}d`;
+}
+
+function formatPercent(value: number) {
+  return value.toFixed(value % 1 === 0 ? 0 : 1);
+}
+
+function averageLeadTimeDays(bookings: BookingWithRelations[]) {
+  const leadTimes = bookings
+    .filter((booking) => booking.slot)
+    .map((booking) =>
+      Math.max(
+        0,
+        (asDate(booking.slot?.startAt ?? booking.createdAt).getTime() -
+          asDate(booking.createdAt).getTime()) /
+          DAY_MS
+      )
+    );
+
+  if (!leadTimes.length) return undefined;
+  return leadTimes.reduce((total, value) => total + value, 0) / leadTimes.length;
+}
 
 export function AdminWorkspace({
   allBookings,
@@ -182,22 +213,49 @@ export function AdminWorkspace({
         : searchedBookings.filter((booking) => booking.status === status),
     [searchedBookings, status]
   );
-  const stats: AdminStat[] = [
-    {
-      label: "Today's visits",
-      sub: "3 telehealth",
-      value: physicianBookings.length.toString()
-    },
-    {
-      label: "Awaiting confirmation",
-      sub: "new requests",
-      value: physicianBookings
-        .filter((candidate) => candidate.status === "pending")
-        .length.toString()
-    },
-    { label: "Avg. lead time", sub: "down 0.6d this week", value: "2.4d" },
-    { label: "No-show rate", sub: "30-day rolling", value: "4.1%" }
-  ];
+  const stats: AdminStat[] = useMemo(() => {
+    const pendingCount = physicianBookings.filter(
+      (candidate) => candidate.status === "pending"
+    ).length;
+    const telehealthCount = physicianBookings.filter(
+      (candidate) => candidate.visitType === "Telehealth"
+    ).length;
+    const scheduledCount = physicianBookings.filter((booking) => booking.slot).length;
+    const leadTimeDays = averageLeadTimeDays(physicianBookings);
+    const cancelledCount = physicianBookings.filter(
+      (candidate) => candidate.status === "cancelled"
+    ).length;
+    const cancellationRate = physicianBookings.length
+      ? (cancelledCount / physicianBookings.length) * 100
+      : 0;
+
+    return [
+      {
+        label: "Today's visits",
+        sub: `${telehealthCount} telehealth`,
+        value: physicianBookings.length.toString()
+      },
+      {
+        label: "Awaiting confirmation",
+        sub: pluralize(pendingCount, "new request"),
+        value: pendingCount.toString()
+      },
+      {
+        label: "Avg. lead time",
+        sub: scheduledCount
+          ? pluralize(scheduledCount, "scheduled booking")
+          : "no scheduled bookings",
+        value: leadTimeDays === undefined ? "N/A" : formatDays(leadTimeDays)
+      },
+      {
+        label: "Cancellation rate",
+        sub: cancelledCount
+          ? pluralize(cancelledCount, "cancelled booking")
+          : "no cancellations",
+        value: `${formatPercent(cancellationRate)}%`
+      }
+    ];
+  }, [physicianBookings]);
 
   return (
     <section

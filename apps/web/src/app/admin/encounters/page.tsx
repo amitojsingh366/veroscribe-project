@@ -4,7 +4,7 @@ import { AdminPlaceholderPage } from "@/components/admin/AdminPlaceholderPage";
 export default function AdminEncountersPage() {
   return (
     <AdminPlaceholderPage
-      description="Encounter prep would organize upcoming visit context, intake notes, and clinician handoff details."
+      description="Encounter prep will organize upcoming visit context and intake notes."
       icon={Stethoscope}
       title="Encounters"
     />

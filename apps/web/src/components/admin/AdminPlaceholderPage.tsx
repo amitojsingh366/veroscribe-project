@@ -22,12 +22,10 @@ export function AdminPlaceholderPage({
           Demo placeholder
         </p>
         <h1 className="mt-2 text-3xl leading-tight">
-          <span className="serif-italic">{title}</span> is parked for now.
+          <span className="serif-italic">{title}</span>
         </h1>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-fg-muted">
-          {description} This page is a placeholder for the purpose of the demo, so
-          the navigation feels complete without pretending the full workflow is
-          already built.
+          {description} This page is a placeholder for the prototype.
         </p>
         <div className="mt-6">
           <Link href="/admin">
