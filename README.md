@@ -75,17 +75,34 @@ Main routes:
 
 ## Key Decisions
 
-### JavaScript End To End
-
-I kept both the frontend and backend in the JavaScript/TypeScript ecosystem:
-Next.js and React on the frontend, Hono on Bun for the backend, and shared
-TypeScript/Zod contracts between them.
-
 ### Stack
 
 Bun workspaces, Turborepo, Next.js 15 App Router, React 19, Tailwind CSS v4,
 Hono, Drizzle ORM, PostgreSQL 16, `postgres-js`, Zod, Zustand, React Hook Form,
 Vitest/RTL/jsdom, `bun:test`, ESLint, Docker, and Docker Compose.
+
+Supporting tools include `@hono/zod-validator` for request validation,
+Drizzle Kit for schema push/migrations, `dotenv` for local configuration,
+`lucide-react` for icons, `clsx` for conditional class names,
+`@tailwindcss/postcss` for Tailwind v4 processing, Testing Library +
+`jest-dom` for web assertions, and shared ESLint/TypeScript config packages
+inside the monorepo.
+
+### Docker For Local Reproducibility
+
+I used Docker because I like compartmentalizing the different services in a
+project: web, API, database, and setup tasks all have clear boundaries. Docker
+also makes process management, logs, environment variables, networking, and
+database lifecycle easier to reason about during review. Most importantly, I
+wanted the prototype to be easy for other people to run without depending on
+their local OS, installed Postgres version, or machine-specific setup. The main
+run path is therefore Docker-based and OS-agnostic.
+
+### JavaScript End To End
+
+I kept both the frontend and backend in the JavaScript/TypeScript ecosystem:
+Next.js and React on the frontend, Hono on Bun for the backend, and shared
+TypeScript/Zod contracts between them.
 
 ### Hono And Drizzle
 
@@ -104,7 +121,9 @@ and it let me move quickly on responsive layouts, spacing, states, and polish
 without introducing a separate component styling system. Tailwind was also easy
 to pair-program with because the design decisions stayed close to the JSX, which
 made it straightforward to iterate with AI tools while keeping the UI consistent
-across patient and admin screens.
+across patient and admin screens. The visual direction is heavily inspired by
+Veroscribe's public landing page at https://www.veroscribe.com/ so the prototype feels
+connected to the existing brand rather than like a generic scheduling demo.
 
 ### Real Database Over Mock-Only Data
 
