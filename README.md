@@ -55,6 +55,7 @@ bun run test
 - An admin schedule workspace with physician switching, search, status tabs,
   route-driven booking detail panels, booking status actions, rescheduling, and
   dynamic summary cards.
+- A responsive patient and admin UI designed for both desktop and mobile review.
 - A Hono API for physicians, availability, bookings, booking detail, and booking
   updates.
 - A Drizzle/Postgres data model with seeded physicians, May 2026 availability
@@ -117,13 +118,14 @@ Flask/FastAPI-style backend code in other projects.
 ### Design And Tailwind
 
 I used Tailwind CSS because I have years of extensive prior experience with it,
-and it let me move quickly on responsive layouts, spacing, states, and polish
-without introducing a separate component styling system. Tailwind was also easy
-to pair-program with because the design decisions stayed close to the JSX, which
-made it straightforward to iterate with AI tools while keeping the UI consistent
-across patient and admin screens. The visual direction is heavily inspired by
-Veroscribe's public landing page at https://www.veroscribe.com/ so the prototype feels
-connected to the existing brand rather than like a generic scheduling demo.
+and it let me move quickly on breakpoint-based responsive layouts, spacing,
+states, and polish without introducing a separate component styling system.
+Tailwind was also easy to pair-program with because the design decisions stayed
+close to the JSX, which made it straightforward to iterate with AI tools while
+keeping the UI consistent across patient and admin screens. The visual direction
+is heavily inspired by Veroscribe's public landing page at
+https://www.veroscribe.com/ so the prototype feels connected to the existing
+brand rather than like a generic scheduling demo.
 
 ### Real Database Over Mock-Only Data
 
