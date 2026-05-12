@@ -1,9 +1,8 @@
 "use client";
 
-import { Check } from "lucide-react";
-import Link from "next/link";
 import { clsx } from "clsx";
 import { useBookingStore } from "@/stores/bookingStore";
+import { BookingProgressItem } from "./BookingProgressItem";
 
 const steps: Array<{
   label: string;
@@ -52,7 +51,7 @@ export function BookingProgress({
         className={clsx(
           variant === "rail"
             ? "flex flex-col gap-1"
-            : "grid grid-cols-4 gap-2"
+            : "flex flex-col gap-1 md:grid md:grid-cols-4 md:gap-2"
         )}
       >
         {steps.map(({ label, sub }, index) => {
@@ -60,54 +59,18 @@ export function BookingProgress({
           const complete = number < step;
           const current = number === step;
           const href = hrefs[index];
-          const content = (
-            <>
-              <span
-                className="inline-flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-xs font-semibold data-[complete=true]:border-primary data-[complete=true]:bg-primary data-[complete=true]:text-primary-fg data-[current=true]:border-primary"
-                data-complete={complete}
-                data-current={current}
-              >
-                {complete ? <Check size={13} /> : number}
-              </span>
-              <span className={clsx(variant === "rail" ? "block" : "hidden sm:block")}>
-                <span
-                  className={clsx(
-                    "block text-sm font-semibold",
-                    current || complete ? "text-fg" : "text-fg-muted"
-                  )}
-                >
-                  {label}
-                </span>
-                <span className="block text-xs text-fg-subtle">{sub}</span>
-              </span>
-            </>
-          );
 
-          return href ? (
-            <Link
-              aria-current={current ? "step" : undefined}
-              className={clsx(
-                "flex items-center gap-3 rounded-lg border border-transparent p-2 text-left transition hover:bg-black/[0.04] data-[current=true]:border-border data-[current=true]:bg-surface",
-                variant === "compact" && "justify-center sm:justify-start"
-              )}
-              data-current={current}
+          return (
+            <BookingProgressItem
+              complete={complete}
+              current={current}
               href={href}
               key={label}
-            >
-              {content}
-            </Link>
-          ) : (
-            <button
-              className={clsx(
-                "flex cursor-not-allowed items-center gap-3 rounded-lg border border-transparent p-2 text-left opacity-50",
-                variant === "compact" && "justify-center sm:justify-start"
-              )}
-              disabled
-              key={label}
-              type="button"
-            >
-              {content}
-            </button>
+              label={label}
+              number={number}
+              sub={sub}
+              variant={variant}
+            />
           );
         })}
       </div>

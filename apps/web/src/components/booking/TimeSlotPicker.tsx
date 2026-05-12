@@ -1,20 +1,35 @@
 "use client";
 
 import type { Slot, VisitType } from "@veroscribe/shared";
-import { clsx } from "clsx";
-import { Building2, ChevronLeft, ChevronRight, Video } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import {
+  AvailabilityDatePicker,
+  type AvailabilityDay
+} from "@/components/booking/AvailabilityDatePicker";
+import {
+  TimeSlotGroups,
+  type TimeSlotSection
+} from "@/components/booking/TimeSlotGroups";
+import { VisitTypeSelector } from "@/components/booking/VisitTypeSelector";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import {
+  addCalendarDays,
+  BOOKING_AVAILABILITY_LOOKAHEAD_DAYS,
+  BOOKING_DATE_JUMP_DAYS,
+  BOOKING_DATE_WINDOW_DAYS,
+  diffCalendarDays,
+  getBookableStartDateKey,
+  parseDateKey
+} from "@/lib/bookingCalendar";
 import {
   asDate,
   formatDate,
   formatDateKey,
-  formatDayOfMonth,
-  formatDayOfWeek,
-  formatMonthYear,
   formatTime
 } from "@/lib/format";
 import { useBookingStore } from "@/stores/bookingStore";
@@ -53,31 +68,77 @@ export function TimeSlotPicker({
     }, {});
   }, [slots]);
 
-  const days = useMemo(
+  const slotDays = useMemo<AvailabilityDay[]>(
     () =>
       Object.entries(groupedSlots)
         .map(([key, daySlots]) => ({
           available: daySlots.some((slot) => slot.status === "available"),
+          date: parseDateKey(key),
           key,
           slots: daySlots
         }))
         .sort((a, b) => a.key.localeCompare(b.key)),
     [groupedSlots]
   );
-  const todayKey = formatDateKey(new Date());
-  const calendarDays = days.filter((day) => day.key >= todayKey);
+  const baseDateKey = useMemo(() => getBookableStartDateKey(), []);
 
   const initialSlot = slots.find((slot) => slot.id === selectedStoreSlotId);
+  const initialSlotDateKey = initialSlot ? formatDateKey(initialSlot.startAt) : "";
   const firstAvailableDay =
-    calendarDays.find((day) => day.available)?.key ??
-    calendarDays[0]?.key ??
-    "";
+    slotDays.find((day) => day.key >= baseDateKey && day.available)?.key ??
+    slotDays.find((day) => day.key >= baseDateKey)?.key ??
+    baseDateKey;
+  const initialDateKey =
+    initialSlotDateKey && initialSlotDateKey >= baseDateKey
+      ? initialSlotDateKey
+      : selectedStoreDate && selectedStoreDate >= baseDateKey
+        ? selectedStoreDate
+        : firstAvailableDay;
+  const [weekStartKey, setWeekStartKey] = useState(() => {
+    const initialOffset = Math.max(
+      0,
+      diffCalendarDays(baseDateKey, initialDateKey)
+    );
+    return addCalendarDays(
+      baseDateKey,
+      Math.floor(initialOffset / BOOKING_DATE_JUMP_DAYS) *
+        BOOKING_DATE_JUMP_DAYS
+    );
+  });
+  const maxWeekStartKey = addCalendarDays(
+    baseDateKey,
+    Math.max(
+      0,
+      Math.min(
+        BOOKING_AVAILABILITY_LOOKAHEAD_DAYS - BOOKING_DATE_WINDOW_DAYS,
+        Math.floor(
+          diffCalendarDays(
+            baseDateKey,
+            slotDays.at(-1)?.key ?? addCalendarDays(baseDateKey, 0)
+          ) / BOOKING_DATE_JUMP_DAYS
+        ) * BOOKING_DATE_JUMP_DAYS
+      )
+    )
+  );
+  const calendarDays = useMemo<AvailabilityDay[]>(
+    () =>
+      Array.from({ length: BOOKING_DATE_WINDOW_DAYS }, (_, index) => {
+        const key = addCalendarDays(weekStartKey, index);
+        const daySlots = groupedSlots[key] ?? [];
+
+        return {
+          available: daySlots.some((slot) => slot.status === "available"),
+          date: parseDateKey(key),
+          key,
+          slots: daySlots
+        };
+      }),
+    [groupedSlots, weekStartKey]
+  );
 
   const { handleSubmit, register, setValue, watch } = useForm<TimeSelectionValues>({
     defaultValues: {
-      dateKey:
-        (initialSlot ? formatDateKey(initialSlot.startAt) : selectedStoreDate) ??
-        firstAvailableDay,
+      dateKey: initialDateKey,
       slotId: initialSlot?.status === "available" ? initialSlot.id : "",
       visitType: selectedStoreVisitType
     }
@@ -88,17 +149,14 @@ export function TimeSlotPicker({
   const selectedVisitType = watch("visitType");
   const selectedDaySlots = groupedSlots[selectedDateKey] ?? [];
   const selectedSlot = slots.find((slot) => slot.id === selectedSlotId);
-  const selectedDayIndex = calendarDays.findIndex(
-    (day) => day.key === selectedDateKey
-  );
-  const activeDayIndex = selectedDayIndex >= 0 ? selectedDayIndex : 0;
-  const activeCalendarDay = calendarDays[activeDayIndex];
-  const canGoPrevious = activeDayIndex > 0;
-  const canGoNext = activeDayIndex < calendarDays.length - 1;
+  const activeCalendarDay =
+    calendarDays.find((day) => day.key === selectedDateKey) ?? calendarDays[0];
+  const canGoPrevious = weekStartKey > baseDateKey;
+  const canGoNext = weekStartKey < maxWeekStartKey;
   const canContinue = selectedSlot?.status === "available";
   const morningSlots = selectedDaySlots.filter(isMorning);
   const afternoonSlots = selectedDaySlots.filter((slot) => !isMorning(slot));
-  const slotSections: Array<{ label: string; slots: Slot[] }> = [
+  const slotSections: TimeSlotSection[] = [
     { label: "Morning", slots: morningSlots },
     { label: "Afternoon", slots: afternoonSlots }
   ];
@@ -110,10 +168,27 @@ export function TimeSlotPicker({
     setValue("slotId", "");
   };
 
-  const selectRelativeDate = (direction: -1 | 1) => {
-    const nextDay = calendarDays[activeDayIndex + direction];
-    if (!nextDay) return;
-    selectDate(nextDay.key);
+  const preferredDateForWeek = (nextWeekStartKey: string) => {
+    const weekKeys = Array.from({ length: BOOKING_DATE_WINDOW_DAYS }, (_, index) =>
+      addCalendarDays(nextWeekStartKey, index)
+    );
+    return (
+      weekKeys.find((key) =>
+        (groupedSlots[key] ?? []).some((slot) => slot.status === "available")
+      ) ?? nextWeekStartKey
+    );
+  };
+
+  const selectRelativeWeek = (direction: -1 | 1) => {
+    const nextWeekStartKey = addCalendarDays(
+      weekStartKey,
+      direction * BOOKING_DATE_JUMP_DAYS
+    );
+    if (nextWeekStartKey < baseDateKey || nextWeekStartKey > maxWeekStartKey) {
+      return;
+    }
+    setWeekStartKey(nextWeekStartKey);
+    selectDate(preferredDateForWeek(nextWeekStartKey));
   };
 
   const selectVisitType = (visitType: VisitType) => {
@@ -142,119 +217,25 @@ export function TimeSlotPicker({
       <input type="hidden" {...register("slotId")} />
       <input type="hidden" {...register("visitType")} />
 
-      <div className="grid grid-cols-2 gap-2 sm:flex">
-        {(["In-person", "Telehealth"] as const).map((visitType) => {
-          const active = selectedVisitType === visitType;
-          return (
-            <button
-              className={clsx(
-                "inline-flex items-center justify-center gap-2 rounded-lg border px-5 py-3 text-sm font-medium transition",
-                active
-                  ? "border-primary bg-primary text-primary-fg"
-                  : "border-border bg-surface text-fg hover:border-[#c9c2b6]"
-              )}
-              key={visitType}
-              onClick={() => selectVisitType(visitType)}
-              type="button"
-            >
-              {visitType === "In-person" ? <Building2 size={14} /> : <Video size={14} />}
-              {visitType}
-            </button>
-          );
-        })}
-      </div>
+      <VisitTypeSelector onChange={selectVisitType} value={selectedVisitType} />
 
-      <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm md:p-6">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="text-sm font-semibold text-fg md:text-base">
-            {activeCalendarDay
-              ? formatMonthYear(
-                  new Date(`${activeCalendarDay.key}T12:00:00-07:00`)
-                )
-              : "Availability"}
-          </h2>
-          <div className="flex gap-1">
-            <button
-              aria-label="Previous date"
-              className="inline-flex size-8 items-center justify-center rounded-full border border-border bg-surface text-fg-muted transition hover:border-[#c9c2b6] disabled:cursor-not-allowed disabled:opacity-40"
-              disabled={!canGoPrevious}
-              onClick={() => selectRelativeDate(-1)}
-              type="button"
-            >
-              <ChevronLeft size={14} />
-            </button>
-            <button
-              aria-label="Next date"
-              className="inline-flex size-8 items-center justify-center rounded-full border border-border bg-surface text-fg-muted transition hover:border-[#c9c2b6] disabled:cursor-not-allowed disabled:opacity-40"
-              disabled={!canGoNext}
-              onClick={() => selectRelativeDate(1)}
-              type="button"
-            >
-              <ChevronRight size={14} />
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-          {calendarDays.map((day) => {
-            const firstSlot = day.slots[0];
-            const active = selectedDateKey === day.key;
-            return (
-              <button
-                className={clsx(
-                  "flex min-h-16 flex-col items-center justify-center rounded-xl border text-center transition",
-                  active
-                    ? "border-primary bg-primary text-primary-fg"
-                    : "border-border bg-surface text-fg hover:border-[#c9c2b6]",
-                  !day.available && "opacity-40"
-                )}
-                key={day.key}
-                onClick={() => selectDate(day.key)}
-                type="button"
-              >
-                <span className="text-[10px] font-medium uppercase tracking-[0.08em] opacity-60">
-                  {firstSlot ? formatDayOfWeek(firstSlot.startAt) : ""}
-                </span>
-                <span className="text-lg font-medium">
-                  {firstSlot ? formatDayOfMonth(firstSlot.startAt) : ""}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-5 border-t border-border-muted pt-5">
-          {slotSections.map(({ label, slots: daySlots }) => (
-            <section className="mt-4 first:mt-0" key={label}>
-              <h3 className="mb-3 text-sm font-semibold text-fg">{label}</h3>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-                {daySlots.map((slot) => {
-                  const active = selectedSlotId === slot.id;
-                  const available = slot.status === "available";
-                  return (
-                    <button
-                      className={clsx(
-                        "rounded-lg border px-3 py-3 text-sm font-medium transition",
-                        active
-                          ? "border-primary bg-primary text-primary-fg"
-                          : "border-border bg-surface text-fg hover:border-[#c9c2b6]",
-                        !available &&
-                          "cursor-not-allowed bg-transparent text-fg-subtle line-through decoration-fg-subtle hover:border-border"
-                      )}
-                      disabled={!available}
-                      key={slot.id}
-                      onClick={() => selectSlot(slot)}
-                      type="button"
-                    >
-                      {formatTime(slot.startAt)}
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          ))}
-        </div>
-      </div>
+      <Card className="p-4 md:p-6">
+        <AvailabilityDatePicker
+          activeDay={activeCalendarDay}
+          canGoNext={canGoNext}
+          canGoPrevious={canGoPrevious}
+          days={calendarDays}
+          onNext={() => selectRelativeWeek(1)}
+          onPrevious={() => selectRelativeWeek(-1)}
+          onSelectDate={selectDate}
+          selectedDateKey={selectedDateKey}
+        />
+        <TimeSlotGroups
+          onSelectSlot={selectSlot}
+          sections={slotSections}
+          selectedSlotId={selectedSlotId}
+        />
+      </Card>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link href="/book">

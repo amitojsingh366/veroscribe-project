@@ -1,10 +1,11 @@
 "use client";
 
 import type { Physician } from "@veroscribe/shared";
-import { Filter, MapPin, Search } from "lucide-react";
+import { Filter, MapPin } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { SearchField } from "@/components/ui/SearchField";
 import { PhysicianList } from "./PhysicianList";
 
 function matchesPhysician(physician: Physician, query: string) {
@@ -35,16 +36,12 @@ export function PhysicianDirectory({ physicians }: { physicians: Physician[] }) 
   return (
     <>
       <div className="mt-7 flex flex-col gap-3 md:flex-row md:items-center">
-        <Card className="flex max-w-xl flex-1 items-center gap-3 rounded-xl px-4 py-3">
-          <Search size={17} className="text-fg-muted" />
-          <input
-            className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search by name, specialty, or clinic"
-            type="search"
-            value={query}
-          />
-        </Card>
+        <SearchField
+          className="max-w-xl flex-1"
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search by name, specialty, or clinic"
+          value={query}
+        />
         <Button variant="secondary">
           <Filter size={15} />
           Filter

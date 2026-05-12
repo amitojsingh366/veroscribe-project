@@ -75,48 +75,64 @@ const prototypeSlots = [
   { label: "4:00 PM" }
 ];
 
-const prototypeDays = [
-  { label: "Mon, May 11", isoDate: "2026-05-11" },
-  { label: "Tue, May 12", isoDate: "2026-05-12" },
-  { label: "Wed, May 13", isoDate: "2026-05-13" },
-  { label: "Thu, May 14", isoDate: "2026-05-14" },
-  { label: "Fri, May 15", isoDate: "2026-05-15" },
-  { label: "Sat, May 16", isoDate: "2026-05-16" }
-];
+const prototypeMayStartDate = new Date("2026-05-01T12:00:00-07:00");
+const prototypeMayDays = 31;
+const prototypeDateFormatter = new Intl.DateTimeFormat("en-US", {
+  day: "numeric",
+  month: "short",
+  timeZone: "America/Vancouver",
+  weekday: "short"
+});
+
+function addPrototypeDays(date: Date, days: number) {
+  const nextDate = new Date(date);
+  nextDate.setUTCDate(nextDate.getUTCDate() + days);
+  return nextDate;
+}
+
+const prototypeDays = Array.from({ length: prototypeMayDays }, (_, index) => {
+  const date = addPrototypeDays(prototypeMayStartDate, index);
+
+  return {
+    isoDate: date.toISOString().slice(0, 10),
+    label: prototypeDateFormatter.format(date),
+    weekday: date.getUTCDay()
+  };
+});
 
 type AvailabilityProfile = {
-  availableDates: string[];
-  blockedByDate: Record<string, string[] | undefined>;
+  availableWeekdays: number[];
+  blockedByWeekday: Record<number, string[] | undefined>;
   blockedTimes: string[];
 };
 
 const availabilityProfiles: AvailabilityProfile[] = [
   {
-    availableDates: ["2026-05-12", "2026-05-13", "2026-05-14", "2026-05-16"],
-    blockedByDate: {},
+    availableWeekdays: [2, 3, 4, 6],
+    blockedByWeekday: {},
     blockedTimes: ["9:00 AM", "10:30 AM", "2:30 PM", "4:00 PM"]
   },
   {
-    availableDates: ["2026-05-11", "2026-05-12", "2026-05-14", "2026-05-15"],
-    blockedByDate: {
-      "2026-05-12": ["8:30 AM", "1:30 PM"],
-      "2026-05-14": ["3:30 PM"]
+    availableWeekdays: [1, 2, 4, 5],
+    blockedByWeekday: {
+      2: ["8:30 AM", "1:30 PM"],
+      4: ["3:30 PM"]
     },
     blockedTimes: ["11:00 AM", "4:00 PM"]
   },
   {
-    availableDates: ["2026-05-12", "2026-05-13", "2026-05-15", "2026-05-16"],
-    blockedByDate: {
-      "2026-05-13": ["9:30 AM", "10:00 AM", "10:30 AM"],
-      "2026-05-16": ["2:00 PM"]
+    availableWeekdays: [2, 3, 5, 6],
+    blockedByWeekday: {
+      3: ["9:30 AM", "10:00 AM", "10:30 AM"],
+      6: ["2:00 PM"]
     },
     blockedTimes: ["8:30 AM", "3:00 PM"]
   },
   {
-    availableDates: ["2026-05-11", "2026-05-13", "2026-05-14", "2026-05-16"],
-    blockedByDate: {
-      "2026-05-11": ["10:00 AM", "2:30 PM"],
-      "2026-05-16": ["11:00 AM", "3:30 PM"]
+    availableWeekdays: [1, 3, 4, 6],
+    blockedByWeekday: {
+      1: ["10:00 AM", "2:30 PM"],
+      6: ["11:00 AM", "3:30 PM"]
     },
     blockedTimes: ["9:30 AM", "4:00 PM"]
   }
@@ -132,9 +148,9 @@ function isSlotAvailable(
     availabilityProfiles[0];
   if (!profile) return false;
   return (
-    profile.availableDates.includes(day.isoDate) &&
+    profile.availableWeekdays.includes(day.weekday) &&
     !profile.blockedTimes.includes(slot.label) &&
-    !(profile.blockedByDate[day.isoDate] ?? []).includes(slot.label)
+    !(profile.blockedByWeekday[day.weekday] ?? []).includes(slot.label)
   );
 }
 

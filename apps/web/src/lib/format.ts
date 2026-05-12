@@ -59,6 +59,19 @@ export function formatTime(value: string | Date) {
   }).format(asDate(value));
 }
 
+export function formatNativeTimeValue(value: string | Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit",
+    hourCycle: "h23",
+    minute: "2-digit",
+    timeZone: "America/Vancouver"
+  }).formatToParts(asDate(value));
+  const hour = parts.find((part) => part.type === "hour")?.value ?? "00";
+  const minute = parts.find((part) => part.type === "minute")?.value ?? "00";
+
+  return `${hour}:${minute}`;
+}
+
 export function formatDateOfBirth(value?: string | null) {
   if (!value) return "DOB not provided";
   return new Intl.DateTimeFormat("en-US", {

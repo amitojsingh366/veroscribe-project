@@ -7,12 +7,14 @@ const sizes = {
 };
 
 export function Avatar({
+  className,
   name,
   src,
   initials,
   tone,
   size = "md"
 }: {
+  className?: string;
   name: string;
   src?: string | null;
   initials?: string | null;
@@ -34,7 +36,7 @@ export function Avatar({
       // eslint-disable-next-line @next/next/no-img-element
       <img
         alt=""
-        className={clsx("rounded-full object-cover", sizes[size])}
+        className={clsx("rounded-full object-cover", sizes[size], className)}
         src={src}
       />
     );
@@ -45,7 +47,8 @@ export function Avatar({
       aria-label={name}
       className={clsx(
         "inline-flex shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#DCE8F4_0%,#EAD9DA_100%)] font-medium text-fg",
-        sizes[size]
+        sizes[size],
+        className
       )}
       style={tone ? { background: tone } : undefined}
     >
