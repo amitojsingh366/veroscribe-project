@@ -1,6 +1,6 @@
 # VeroScribe Patient Booking
 
-VeroScribe is a Bun/Turborepo prototype for a single-clinic patient booking flow
+This is a Bun/Turborepo prototype for a single-clinic patient booking flow
 and physician admin dashboard. It includes a Next.js patient experience, an
 admin booking workspace, a Hono API, and Postgres-backed demo scheduling data.
 
@@ -75,52 +75,84 @@ Main routes:
 
 ## Key Decisions
 
-- **JavaScript end to end:** I kept both the frontend and backend in the
-  JavaScript/TypeScript ecosystem: Next.js and React on the frontend, Hono on
-  Bun for the backend, and shared TypeScript/Zod contracts between them.
-- **Stack:** Bun workspaces, Turborepo, Next.js 15 App Router, React 19,
-  Tailwind CSS v4, Hono, Drizzle ORM, PostgreSQL 16, `postgres-js`, Zod,
-  Zustand, React Hook Form, Vitest/RTL/jsdom, `bun:test`, ESLint, Docker, and
-  Docker Compose.
-- **Hono and Drizzle:** I had been meaning to try Hono and Drizzle, and this
-  booking prototype was a good opportunity because it needed a small typed API,
-  a real relational data model, and fast iteration. I have used Prisma and
-  Postgres separately before, so choosing Drizzle with `postgres-js` was a useful
-  way to compare against my Prisma experience and experiment with a lighter
-  SQL-first TypeScript stack. It was also a good excuse to try something
-  different after writing a lot of Python Flask/FastAPI-style backend code in
-  other projects.
-- **Real database over mock-only data:** I chose Postgres instead of only mock
-  data because persisted state made the prototype easier to test across sessions,
-  desktop, and mobile. It also let me seed blocked availability, booked slots,
-  cancelled bookings, and enough demo data to compare views realistically.
-  Because I pair-programmed the prototype with Claude and Codex, the extra setup
-  cost of using a local database was still manageable for the scope.
-- **State management:** Server Components load route data, while Zustand owns
-  local workflow/UI state such as booking selections, admin filters, and detail
-  panel state. Zustand fit here because the app needs small shared client state
-  across steps without adding a heavier global framework. React Hook Form owns
-  form-local state for patient details and time selection because it keeps form
-  updates efficient, handles validation cleanly, and pairs well with the shared
-  Zod schemas.
-- **URL state:** The URL owns navigable detail state like `/admin/[bookingId]`,
-  which makes refresh, back/forward, and direct links easier to reason about.
-- **Validation:** Zod schemas live in `packages/shared` so frontend forms and
-  API routes use the same contracts.
-- **AI-assisted workflow:** I used AI tools as part of the normal development
-  loop. I laid out the architecture and product shape in a large Claude prompt,
-  had Claude turn it into an implementation plan, then used Codex to scaffold,
-  iterate, test, and refine the project.
-- **Prototype data:** availability is persisted as concrete slot rows generated
-  by seed data. This keeps the patient booking flow realistic without building a
-  full physician availability editor yet.
-- **Scoped omissions:** I intentionally left out authentication, production
-  calendar integrations, payments, insurance eligibility, notifications, and
-  production deployment so the work sample stayed focused on the requested
-  booking flow, admin view, UX, and core tradeoffs.
-- **Future server state:** TanStack Query is documented as the preferred next
-  step if admin mutations, background refresh, optimistic updates, or client
-  caching needs grow beyond Server Component loads plus `router.refresh()`.
+### JavaScript End To End
+
+I kept both the frontend and backend in the JavaScript/TypeScript ecosystem:
+Next.js and React on the frontend, Hono on Bun for the backend, and shared
+TypeScript/Zod contracts between them.
+
+### Stack
+
+Bun workspaces, Turborepo, Next.js 15 App Router, React 19, Tailwind CSS v4,
+Hono, Drizzle ORM, PostgreSQL 16, `postgres-js`, Zod, Zustand, React Hook Form,
+Vitest/RTL/jsdom, `bun:test`, ESLint, Docker, and Docker Compose.
+
+### Hono And Drizzle
+
+I had been meaning to try Hono and Drizzle, and this booking prototype was a good
+opportunity because it needed a small typed API, a real relational data model,
+and fast iteration. I have used Prisma and Postgres separately before, so
+choosing Drizzle with `postgres-js` was a useful way to compare against my Prisma
+experience and experiment with a lighter SQL-first TypeScript stack. It was also
+a good excuse to try something different after writing a lot of Python
+Flask/FastAPI-style backend code in other projects.
+
+### Design And Tailwind
+
+I used Tailwind CSS because I have years of extensive prior experience with it,
+and it let me move quickly on responsive layouts, spacing, states, and polish
+without introducing a separate component styling system. Tailwind was also easy
+to pair-program with because the design decisions stayed close to the JSX, which
+made it straightforward to iterate with AI tools while keeping the UI consistent
+across patient and admin screens.
+
+### Real Database Over Mock-Only Data
+
+I chose Postgres instead of only mock data because persisted state made the
+prototype easier to test across sessions, desktop, and mobile. It also let me
+seed blocked availability, booked slots, cancelled bookings, and enough demo
+data to compare views realistically. Because I pair-programmed the prototype
+with Claude and Codex, the extra setup cost of using a local database was still
+manageable for the scope.
+
+### State Management
+
+Server Components load route data, while Zustand owns local workflow/UI state
+such as booking selections, admin filters, and detail panel state. Zustand fit
+here because the app needs small shared client state across steps without adding
+a heavier global framework. React Hook Form owns form-local state for patient
+details and time selection because it keeps form updates efficient, handles
+validation cleanly, and pairs well with the shared Zod schemas.
+
+### URL State
+
+The URL owns navigable detail state like `/admin/[bookingId]`, which makes
+refresh, back/forward, and direct links easier to reason about.
+
+### Validation
+
+Zod schemas live in `packages/shared` so frontend forms and API routes use the
+same contracts.
+
+### AI-Assisted Workflow
+
+I used AI tools as part of the normal development loop. I laid out the
+architecture and product shape in a large Claude prompt, had Claude turn it into
+an implementation plan, then used Codex to scaffold, iterate, test, and refine
+the project.
+
+### Prototype Data
+
+Availability is persisted as concrete slot rows generated by seed data. This
+keeps the patient booking flow realistic without building a full physician
+availability editor yet.
+
+### Scoped Omissions
+
+I intentionally left out authentication, production calendar integrations,
+payments, insurance eligibility, notifications, and production deployment so the
+work sample stayed focused on the requested booking flow, admin view, UX, and
+core tradeoffs.
 
 ## What I Would Improve With More Time
 
@@ -134,8 +166,9 @@ Main routes:
   panel, rescheduling, and responsive behavior.
 - Add Storybook or a similar component sandbox for reviewing responsive UI
   states and admin/patient components in isolation.
-- Introduce TanStack Query for client server-state caching once the admin
-  workspace needs optimistic updates or background refresh.
+- Add TanStack Query if the admin workspace grows to need client-side
+  server-state caching, optimistic updates, or background refresh beyond Server
+  Component loads plus `router.refresh()`.
 - Implement real admin Requests, Waitlist, Patients, Encounters, and Reports
   workflows instead of prototype placeholders.
 - Replace the single admin workspace with physician accounts so each physician
