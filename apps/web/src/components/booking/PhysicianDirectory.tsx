@@ -3,10 +3,13 @@
 import type { Physician } from "@veroscribe/shared";
 import { Filter, MapPin } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SearchField } from "@/components/ui/SearchField";
 import { PhysicianList } from "./PhysicianList";
+
+const placeholderMessage = "This feature has not been implemented in this prototype.";
 
 function matchesPhysician(physician: Physician, query: string) {
   const haystack = [
@@ -42,11 +45,17 @@ export function PhysicianDirectory({ physicians }: { physicians: Physician[] }) 
           placeholder="Search by name, specialty, or clinic"
           value={query}
         />
-        <Button variant="secondary">
+        <Button
+          onClick={() => toast.info(placeholderMessage)}
+          variant="secondary"
+        >
           <Filter size={15} />
           Filter
         </Button>
-        <Button variant="secondary">
+        <Button
+          onClick={() => toast.info(placeholderMessage)}
+          variant="secondary"
+        >
           <MapPin size={15} />
           Within 5 mi
         </Button>

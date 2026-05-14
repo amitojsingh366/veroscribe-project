@@ -1,5 +1,12 @@
+import { notFound } from "next/navigation";
 import { AdminWorkspace } from "@/components/admin/AdminWorkspace";
-import { getBooking, getBookings, getPhysicians } from "@/lib/api";
+import {
+  getBooking,
+  getBookings,
+  getPhysicians,
+  isApiNotFound
+} from "@/lib/api";
+import { formatDate } from "@/lib/format";
 
 export default async function AdminBookingPage({
   params
@@ -11,7 +18,10 @@ export default async function AdminBookingPage({
     getPhysicians(),
     getBookings(),
     getBooking(bookingId)
-  ]);
+  ]).catch((error: unknown) => {
+    if (isApiNotFound(error)) notFound();
+    throw error;
+  });
 
   return (
     <AdminWorkspace
@@ -20,6 +30,7 @@ export default async function AdminBookingPage({
       initialPhysicianId={booking.physicianId}
       physicians={physicians}
       selectedBookingId={booking.id}
+      todayLabel={formatDate(new Date())}
     />
   );
 }

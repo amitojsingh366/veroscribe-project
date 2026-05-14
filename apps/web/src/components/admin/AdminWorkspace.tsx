@@ -49,13 +49,15 @@ export function AdminWorkspace({
   detailBackHref,
   initialPhysicianId,
   physicians,
-  selectedBookingId
+  selectedBookingId,
+  todayLabel
 }: {
   allBookings: BookingWithRelations[];
   detailBackHref?: string;
   initialPhysicianId?: string;
   physicians: Physician[];
   selectedBookingId?: string;
+  todayLabel: string;
 }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
@@ -278,6 +280,7 @@ export function AdminWorkspace({
           onSearchChange={setSearchTerm}
           physicians={physicians}
           searchTerm={searchTerm}
+          todayLabel={todayLabel}
         />
 
         <AdminStatsGrid stats={stats} />

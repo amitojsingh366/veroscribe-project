@@ -28,6 +28,12 @@ const legalTransitions: Record<
   completed: []
 } as const;
 
+function hasDatabaseCode(error: unknown, code: string): boolean {
+  if (!error || typeof error !== "object") return false;
+  const record = error as { cause?: unknown; code?: unknown };
+  return record.code === code || hasDatabaseCode(record.cause, code);
+}
+
 export const bookings = new Hono()
   .post(
     "/",
@@ -37,47 +43,69 @@ export const bookings = new Hono()
     async (c) => {
       const input = c.req.valid("json");
 
-      const [slot] = await db
-        .select()
-        .from(availabilitySlots)
-        .where(
-          and(
-            eq(availabilitySlots.id, input.slotId),
-            eq(availabilitySlots.physicianId, input.physicianId)
-          )
-        );
+      try {
+        const result = await db.transaction(async (tx) => {
+          const [claimedSlot] = await tx
+            .update(availabilitySlots)
+            .set({ status: "booked" })
+            .where(
+              and(
+                eq(availabilitySlots.id, input.slotId),
+                eq(availabilitySlots.physicianId, input.physicianId),
+                eq(availabilitySlots.status, "available")
+              )
+            )
+            .returning({ id: availabilitySlots.id });
 
-      if (!slot) return c.json({ error: "Slot not found" }, 404);
-      if (slot.status !== "available") {
-        return c.json({ error: "Slot already booked" }, 409);
+          if (!claimedSlot) {
+            const [slot] = await tx
+              .select({ id: availabilitySlots.id })
+              .from(availabilitySlots)
+              .where(
+                and(
+                  eq(availabilitySlots.id, input.slotId),
+                  eq(availabilitySlots.physicianId, input.physicianId)
+                )
+              );
+
+            return { kind: slot ? "slot-unavailable" : "slot-not-found" } as const;
+          }
+
+          const [row] = await tx
+            .insert(bookingsTable)
+            .values({
+              physicianId: input.physicianId,
+              slotId: input.slotId,
+              patientName: input.patientName,
+              patientEmail: input.patientEmail,
+              patientPhone: input.patientPhone,
+              patientDateOfBirth: input.patientDateOfBirth,
+              reasonForVisit: input.reasonForVisit,
+              visitType: input.visitType,
+              insurance: input.insurance ?? null,
+              status: "pending"
+            })
+            .returning();
+
+          if (!row) throw new Error("Failed to create booking");
+          return { kind: "created", row } as const;
+        });
+
+        if (result.kind === "slot-not-found") {
+          return c.json({ error: "Slot not found" }, 404);
+        }
+
+        if (result.kind === "slot-unavailable") {
+          return c.json({ error: "Slot already booked" }, 409);
+        }
+
+        return c.json(result.row, 201);
+      } catch (error) {
+        if (hasDatabaseCode(error, "23505")) {
+          return c.json({ error: "Slot already booked" }, 409);
+        }
+        throw error;
       }
-
-      const created = await db.transaction(async (tx) => {
-        const [row] = await tx
-          .insert(bookingsTable)
-          .values({
-            physicianId: input.physicianId,
-            slotId: input.slotId,
-            patientName: input.patientName,
-            patientEmail: input.patientEmail,
-            patientPhone: input.patientPhone,
-            patientDateOfBirth: input.patientDateOfBirth,
-            reasonForVisit: input.reasonForVisit,
-            visitType: input.visitType,
-            insurance: input.insurance ?? null,
-            status: "pending"
-          })
-          .returning();
-
-        await tx
-          .update(availabilitySlots)
-          .set({ status: "booked" })
-          .where(eq(availabilitySlots.id, input.slotId));
-
-        return row;
-      });
-
-      return c.json(created, 201);
     }
   )
   .get(
@@ -145,55 +173,82 @@ export const bookings = new Hono()
         return c.json({ error: "Terminal bookings cannot be rescheduled" }, 409);
       }
 
-      const updated = await db.transaction(async (tx) => {
-        if (slotId && slotId !== existing.slotId) {
-          const [nextSlot] = await tx
-            .select()
-            .from(availabilitySlots)
-            .where(
-              and(
-                eq(availabilitySlots.id, slotId),
-                eq(availabilitySlots.physicianId, existing.physicianId)
+      if (status === "cancelled" && slotId && slotId !== existing.slotId) {
+        return c.json({ error: "Cannot reschedule while cancelling" }, 409);
+      }
+
+      try {
+        const result = await db.transaction(async (tx) => {
+          if (slotId && slotId !== existing.slotId) {
+            const [claimedSlot] = await tx
+              .update(availabilitySlots)
+              .set({ status: "booked" })
+              .where(
+                and(
+                  eq(availabilitySlots.id, slotId),
+                  eq(availabilitySlots.physicianId, existing.physicianId),
+                  eq(availabilitySlots.status, "available")
+                )
               )
-            );
+              .returning({ id: availabilitySlots.id });
 
-          if (!nextSlot) return undefined;
-          if (nextSlot.status !== "available") return null;
+            if (!claimedSlot) {
+              const [nextSlot] = await tx
+                .select({ id: availabilitySlots.id })
+                .from(availabilitySlots)
+                .where(
+                  and(
+                    eq(availabilitySlots.id, slotId),
+                    eq(availabilitySlots.physicianId, existing.physicianId)
+                  )
+                );
 
-          await tx
-            .update(availabilitySlots)
-            .set({ status: "available" })
-            .where(eq(availabilitySlots.id, existing.slotId));
+              return {
+                kind: nextSlot ? "slot-unavailable" : "slot-not-found"
+              } as const;
+            }
 
-          await tx
-            .update(availabilitySlots)
-            .set({ status: "booked" })
-            .where(eq(availabilitySlots.id, slotId));
+            await tx
+              .update(availabilitySlots)
+              .set({ status: "available" })
+              .where(eq(availabilitySlots.id, existing.slotId));
+          }
+
+          if (status === "cancelled") {
+            await tx
+              .update(availabilitySlots)
+              .set({ status: "available" })
+              .where(eq(availabilitySlots.id, existing.slotId));
+          }
+
+          const [row] = await tx
+            .update(bookingsTable)
+            .set({
+              ...(status ? { status } : {}),
+              ...(slotId ? { slotId } : {}),
+              notes: notes ?? existing.notes
+            })
+            .where(eq(bookingsTable.id, id))
+            .returning();
+
+          if (!row) throw new Error("Failed to update booking");
+          return { kind: "updated", row } as const;
+        });
+
+        if (result.kind === "slot-not-found") {
+          return c.json({ error: "Slot not found" }, 404);
         }
 
-        if (status === "cancelled") {
-          await tx
-            .update(availabilitySlots)
-            .set({ status: "available" })
-            .where(eq(availabilitySlots.id, slotId ?? existing.slotId));
+        if (result.kind === "slot-unavailable") {
+          return c.json({ error: "Slot already booked" }, 409);
         }
 
-        const [row] = await tx
-          .update(bookingsTable)
-          .set({
-            ...(status ? { status } : {}),
-            ...(slotId ? { slotId } : {}),
-            notes: notes ?? existing.notes
-          })
-          .where(eq(bookingsTable.id, id))
-          .returning();
-
-        return row;
-      });
-
-      if (updated === undefined) return c.json({ error: "Slot not found" }, 404);
-      if (updated === null) return c.json({ error: "Slot already booked" }, 409);
-
-      return c.json(updated);
+        return c.json(result.row);
+      } catch (error) {
+        if (hasDatabaseCode(error, "23505")) {
+          return c.json({ error: "Slot already booked" }, 409);
+        }
+        throw error;
+      }
     }
   );

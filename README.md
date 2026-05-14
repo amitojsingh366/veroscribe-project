@@ -14,8 +14,9 @@ cp .env.example .env # first time only
 docker compose up -d
 ```
 
-This builds the local images, resets Postgres, pushes the Drizzle schema, and
-seeds demo data before the app starts. It is intentionally not data-preserving.
+This builds the local images, pushes the Drizzle schema, and seeds demo data
+before the app starts. Existing Docker volume data is preserved; demo seed data
+is inserted only when the database is empty.
 
 Open:
 
@@ -62,6 +63,8 @@ bun run test
   slots, and demo bookings across multiple physicians.
 - Shared Zod schemas and TypeScript types for booking, physician, slot, status,
   and visit-type contracts.
+- Sonner toast feedback for booking requests, admin booking actions,
+  rescheduling, API errors, and intentionally unimplemented prototype buttons.
 - Placeholder admin routes for future Requests, Waitlist, Patients, Encounters,
   and Reports sections.
 
@@ -85,7 +88,8 @@ Vitest/RTL/jsdom, `bun:test`, ESLint, Docker, and Docker Compose.
 Supporting tools include `@hono/zod-validator` for request validation,
 Drizzle Kit for schema push/migrations, `dotenv` for local configuration,
 `lucide-react` for icons, `clsx` for conditional class names,
-`@tailwindcss/postcss` for Tailwind v4 processing, Testing Library +
+`sonner` for lightweight toast notifications, `@tailwindcss/postcss` for
+Tailwind v4 processing, Testing Library +
 `jest-dom` for web assertions, and shared ESLint/TypeScript config packages
 inside the monorepo.
 
@@ -97,7 +101,9 @@ also makes process management, logs, environment variables, networking, and
 database lifecycle easier to reason about during review. Most importantly, I
 wanted the prototype to be easy for other people to run without depending on
 their local OS, installed Postgres version, or machine-specific setup. The main
-run path is therefore Docker-based and OS-agnostic.
+run path is therefore Docker-based and OS-agnostic. `docker compose up -d`
+preserves an existing Postgres volume; it pushes the current schema and seeds
+demo data only when the database has no physician records.
 
 ### JavaScript End To End
 
@@ -176,7 +182,9 @@ yet.
 I intentionally left out authentication, production calendar integrations,
 payments, insurance eligibility, notifications, and production deployment so the
 work sample stayed focused on the requested booking flow, admin view, UX, and
-core tradeoffs.
+core tradeoffs. Buttons for unimplemented prototype features, such as filters,
+calendar export, reminders, and manual new-booking creation, show an info toast
+instead of silently doing nothing.
 
 ## What I Would Improve With More Time
 

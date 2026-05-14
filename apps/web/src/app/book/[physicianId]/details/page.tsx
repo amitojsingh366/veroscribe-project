@@ -1,9 +1,10 @@
+import { notFound } from "next/navigation";
 import { BookingSidebar } from "@/components/booking/BookingSidebar";
 import { PatientStepHeader } from "@/components/booking/PatientStepHeader";
 import { PatientStepLayout } from "@/components/booking/PatientStepLayout";
 import { PatientDetailsStep } from "@/components/booking/PatientDetailsStep";
 import { Card } from "@/components/ui/Card";
-import { getPhysician } from "@/lib/api";
+import { getPhysician, isApiNotFound } from "@/lib/api";
 
 export default async function DetailsPage({
   params
@@ -11,7 +12,10 @@ export default async function DetailsPage({
   params: Promise<{ physicianId: string }>;
 }) {
   const { physicianId } = await params;
-  const physician = await getPhysician(physicianId);
+  const physician = await getPhysician(physicianId).catch((error: unknown) => {
+    if (isApiNotFound(error)) notFound();
+    throw error;
+  });
 
   return (
     <PatientStepLayout sidebar={<BookingSidebar physician={physician} step={3} />}>

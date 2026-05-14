@@ -8,6 +8,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
 import type { z } from "zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -111,8 +112,10 @@ export function PatientDetailsForm({
       });
       const booking = await createBooking(values);
       setBookingId(booking.id);
+      toast.success("Booking request submitted.");
       router.push(`/book/confirmation/${booking.id}`);
     } catch {
+      toast.error("Could not create the booking. The slot may no longer be available.");
       setError("root", {
         message: "Could not create the booking. The slot may no longer be available."
       });

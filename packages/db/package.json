@@ -13,6 +13,7 @@
     "push": "drizzle-kit push --force",
     "migrate": "bun run src/migrate.ts",
     "seed": "bun run src/seed.ts",
+    "seed:if-empty": "bun run src/seed-if-empty.ts",
     "studio": "drizzle-kit studio",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"

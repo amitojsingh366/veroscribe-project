@@ -12,6 +12,7 @@ import {
   useRef,
   useState
 } from "react";
+import { toast } from "sonner";
 import { getAvailability, updateBooking } from "@/lib/api";
 import {
   asDate,
@@ -151,7 +152,15 @@ export function BookingDetailPanel({
       const firstSlot = nextAvailableSlots[0];
       setRescheduleDate(firstSlot ? formatDateKey(firstSlot.startAt) : "");
       setRescheduleTime(firstSlot ? formatNativeTimeValue(firstSlot.startAt) : "");
+      if (nextAvailableSlots.length) {
+        toast.success("Open reschedule times loaded.");
+      } else {
+        toast.info("No open reschedule times were found for this physician.");
+      }
       scrollToReschedule();
+    } catch {
+      toast.error("Could not load reschedule times. Please try again.");
+      closeReschedule();
     } finally {
       setIsLoadingSlots(false);
     }
@@ -174,8 +183,11 @@ export function BookingDetailPanel({
     setIsSubmittingReschedule(true);
     try {
       await updateBooking(booking.id, { slotId: selectedSlot.id });
+      toast.success("Booking rescheduled.");
       closeReschedule();
       router.refresh();
+    } catch {
+      toast.error("Could not reschedule this booking. The slot may no longer be open.");
     } finally {
       setIsSubmittingReschedule(false);
     }

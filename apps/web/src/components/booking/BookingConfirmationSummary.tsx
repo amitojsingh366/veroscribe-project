@@ -1,12 +1,17 @@
+"use client";
+
 import type { BookingWithRelations } from "@veroscribe/shared";
 import { Bell, Calendar, Clock } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DetailItem } from "@/components/ui/DetailItem";
 import { formatDate, formatTime } from "@/lib/format";
+
+const placeholderMessage = "This feature has not been implemented in this prototype.";
 
 export function BookingConfirmationSummary({
   booking
@@ -67,11 +72,17 @@ export function BookingConfirmationSummary({
           Free cancellation up to 24 hours before the visit.
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary">
+          <Button
+            onClick={() => toast.info(placeholderMessage)}
+            variant="secondary"
+          >
             <Calendar size={14} />
             Add to calendar
           </Button>
-          <Button variant="secondary">
+          <Button
+            onClick={() => toast.info(placeholderMessage)}
+            variant="secondary"
+          >
             <Bell size={14} />
             Reminders
           </Button>

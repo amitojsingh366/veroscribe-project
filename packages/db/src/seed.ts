@@ -463,7 +463,7 @@ function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60_000);
 }
 
-async function main() {
+export async function seedDemoData() {
   console.log("Wiping existing data");
   await db.delete(bookings);
   await db.delete(availabilitySlots);
@@ -580,10 +580,15 @@ async function main() {
   }
 
   console.log("Seed complete");
-  process.exit(0);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (import.meta.main) {
+  seedDemoData()
+    .then(() => {
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
+}

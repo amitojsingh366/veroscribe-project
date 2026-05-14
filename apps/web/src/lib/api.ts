@@ -7,6 +7,21 @@ import type {
 } from "@veroscribe/shared";
 import { env } from "@/env";
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly path: string
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export function isApiNotFound(error: unknown) {
+  return error instanceof ApiError && error.status === 404;
+}
+
 function apiUrl(path: string) {
   const baseUrl =
     typeof window === "undefined"
@@ -27,7 +42,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${path}`);
+    let message = `API request failed with ${response.status}`;
+
+    try {
+      const body = (await response.json()) as { error?: unknown };
+      if (typeof body.error === "string") message = body.error;
+    } catch {
+      // Keep the generic message when the API does not return JSON.
+    }
+
+    throw new ApiError(message, response.status, path);
   }
 
   return response.json() as Promise<T>;

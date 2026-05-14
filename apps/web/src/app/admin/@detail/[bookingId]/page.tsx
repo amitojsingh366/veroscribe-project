@@ -1,5 +1,6 @@
+import { notFound } from "next/navigation";
 import { BookingDetailPanel } from "@/components/admin/BookingDetailPanel";
-import { getBooking } from "@/lib/api";
+import { getBooking, isApiNotFound } from "@/lib/api";
 
 export default async function AdminDetailSlotPage({
   params
@@ -7,6 +8,9 @@ export default async function AdminDetailSlotPage({
   params: Promise<{ bookingId: string }>;
 }) {
   const { bookingId } = await params;
-  const booking = await getBooking(bookingId);
+  const booking = await getBooking(bookingId).catch((error: unknown) => {
+    if (isApiNotFound(error)) notFound();
+    throw error;
+  });
   return <BookingDetailPanel booking={booking} />;
 }

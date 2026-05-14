@@ -32,9 +32,8 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgres://${POSTGRES_USER:-veroscribe}:${POSTGRES_PASSWORD:-veroscribe}@db:5432/${POSTGRES_DB:-veroscribe}
     command: >
-      sh -c "bun run db:reset &&
-             bun run db:push &&
-             bun run db:seed"
+      sh -c "bun run db:push &&
+             bun run db:seed:if-empty"
     restart: "no"
     networks:
       - veroscribe

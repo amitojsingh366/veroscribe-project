@@ -4,9 +4,16 @@ import type { BookingStatus } from "@veroscribe/shared";
 import { Check, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { updateBooking } from "@/lib/api";
 import { useAdminStore } from "@/stores/adminStore";
+
+const statusSuccessMessages = {
+  cancelled: "Booking cancelled.",
+  completed: "Booking marked complete.",
+  confirmed: "Booking confirmed."
+} as const;
 
 export function BookingActions({
   bookingId,
@@ -31,7 +38,14 @@ export function BookingActions({
     try {
       await updateBooking(bookingId, { status: nextStatus });
       setStatus(nextStatus);
+      if (nextStatus === "cancelled") {
+        toast.warning(statusSuccessMessages[nextStatus]);
+      } else {
+        toast.success(statusSuccessMessages[nextStatus]);
+      }
       router.refresh();
+    } catch {
+      toast.error("Could not update this booking. Please try again.");
     } finally {
       setIsSubmittingStatus(false);
     }

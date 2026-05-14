@@ -1,8 +1,9 @@
+import { notFound } from "next/navigation";
 import { BookingSidebar } from "@/components/booking/BookingSidebar";
 import { PatientStepHeader } from "@/components/booking/PatientStepHeader";
 import { PatientStepLayout } from "@/components/booking/PatientStepLayout";
 import { TimeSlotPicker } from "@/components/booking/TimeSlotPicker";
-import { getAvailability, getPhysician } from "@/lib/api";
+import { getAvailability, getPhysician, isApiNotFound } from "@/lib/api";
 import { getAvailabilityQueryRange } from "@/lib/bookingCalendar";
 
 export default async function SelectTimePage({
@@ -15,7 +16,10 @@ export default async function SelectTimePage({
   const [physician, slots] = await Promise.all([
     getPhysician(physicianId),
     getAvailability(physicianId, availabilityRange.from, availabilityRange.to)
-  ]);
+  ]).catch((error: unknown) => {
+    if (isApiNotFound(error)) notFound();
+    throw error;
+  });
 
   return (
     <PatientStepLayout sidebar={<BookingSidebar physician={physician} step={2} />}>

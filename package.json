@@ -17,6 +17,7 @@
     "db:push": "bun --filter=@veroscribe/db run push",
     "db:migrate": "bun --filter=@veroscribe/db run migrate",
     "db:seed": "bun --filter=@veroscribe/db run seed",
+    "db:seed:if-empty": "bun --filter=@veroscribe/db run seed:if-empty",
     "db:studio": "bun --filter=@veroscribe/db run studio"
   },
   "devDependencies": {
