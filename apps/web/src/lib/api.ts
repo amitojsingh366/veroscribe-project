@@ -2,10 +2,17 @@ import type {
   Booking,
   BookingStatus,
   BookingWithRelations,
+  CreateBookingInput,
   Physician,
-  Slot
+  Slot,
+  UpdateBookingStatusInput
 } from "@veroscribe/shared";
 import { env } from "@/env";
+
+export type BookingListFilters = {
+  status?: BookingStatus;
+  physicianId?: string;
+};
 
 export class ApiError extends Error {
   constructor(
@@ -57,6 +64,32 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export const apiQueryKeys = {
+  physicians: {
+    all: ["physicians"] as const,
+    detail: (id: string) => ["physicians", id] as const,
+    availability: (physicianId: string, from: Date, to: Date) =>
+      [
+        "physicians",
+        physicianId,
+        "availability",
+        from.toISOString(),
+        to.toISOString()
+      ] as const
+  },
+  bookings: {
+    all: ["bookings"] as const,
+    detail: (id: string) => ["bookings", id] as const,
+    list: (filters?: BookingListFilters) =>
+      [
+        "bookings",
+        "list",
+        filters?.physicianId ?? null,
+        filters?.status ?? null
+      ] as const
+  }
+} as const;
+
 export function getPhysicians() {
   return request<Physician[]>("/api/physicians");
 }
@@ -76,10 +109,7 @@ export function getAvailability(physicianId: string, from: Date, to: Date) {
   );
 }
 
-export function getBookings(filters?: {
-  status?: BookingStatus;
-  physicianId?: string;
-}) {
+export function getBookings(filters?: BookingListFilters) {
   const params = new URLSearchParams();
   if (filters?.status) params.set("status", filters.status);
   if (filters?.physicianId) params.set("physicianId", filters.physicianId);
@@ -92,14 +122,14 @@ export function getBooking(id: string) {
   return request<BookingWithRelations>(`/api/bookings/${id}`);
 }
 
-export function createBooking(payload: unknown) {
+export function createBooking(payload: CreateBookingInput) {
   return request<Booking>("/api/bookings", {
     method: "POST",
     body: JSON.stringify(payload)
   });
 }
 
-export function updateBooking(id: string, payload: unknown) {
+export function updateBooking(id: string, payload: UpdateBookingStatusInput) {
   return request<Booking>(`/api/bookings/${id}`, {
     method: "PATCH",
     body: JSON.stringify(payload)
